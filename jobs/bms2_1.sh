@@ -63,18 +63,7 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-python main2.py \
-    --dir /logs2/EuroSAT
-    --target_dataset EuroSAT \   
-    --target_subset_split datasets/split_seed_1/EuroSAT_unlabeled_20.csv \
-    --bsize 256 \
-    --epochs 1000 \
-    --save_freq 50 \
-    --print_freq 10 \
-    --seed 1 \
-    --wd 1e-4 \
-    --num_workers 4 \
-    --model resnet10 \
+python main2.py --dir ./logs2/EuroSAT --target_dataset EuroSAT --target_subset_split datasets/split_seed_1/EuroSAT_unlabeled_20.csv --bsize 256 --epochs 1000 --model resnet10
 
 wait
 
