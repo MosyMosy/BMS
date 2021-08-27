@@ -11,7 +11,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks-per-node=32
 #SBATCH --mem=127000M
-#SBATCH --time=3-00:00
+#SBATCH --time=0-00:30
 #SBATCH --account=rrg-ebrahimi
 
 nvidia-smi
@@ -63,18 +63,7 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-python main.py \
-    --dir /logs/EuroSAT
-    --target_dataset EuroSAT \   
-    --target_subset_split datasets/split_seed_1/EuroSAT_unlabeled_20.csv \
-    --bsize 256 \
-    --epochs 1000 \
-    --save_freq 50 \
-    --print_freq 10 \
-    --seed 1 \
-    --wd 1e-4 \
-    --num_workers 4 \
-    --model resnet10 \
+python main.py --dir /logs/EuroSAT --target_dataset EuroSAT --target_subset_split datasets/split_seed_1/EuroSAT_unlabeled_20.csv --bsize 10 --epochs 1 --model resnet10
 
 wait
 
