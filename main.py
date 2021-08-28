@@ -504,6 +504,7 @@ def train(model, clf,
           num_epochs, logger, trainlog, args, device, turn_off_sync=False):
 
     meters = utils.AverageMeterSet()
+    model.to(device)
     model.train()
     clf.train()
 
@@ -631,6 +632,7 @@ def validate(model, clf,
              base_loader, epoch, num_epochs, logger,
              testlog, args, device, postfix='Validation', turn_off_sync=False):
     meters = utils.AverageMeterSet()
+    model.to(device)
     model.eval()
     clf.eval()
 

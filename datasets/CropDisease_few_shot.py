@@ -54,7 +54,7 @@ class SimpleDataset:
         self.transform = transform
         self.target_transform = target_transform
         self.split = split
-        self.d = ImageFolder(configs.CropDisease_path + "/dataset/train/", 
+        self.d = ImageFolder(configs.CropDisease_path, 
                             transform=self.transform,
                              target_transform=self.target_transform)
 
