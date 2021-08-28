@@ -594,7 +594,7 @@ def train(model, clf,
                              'Top1_base: {meters[top1_base]:.4f} '
                              'Top1_base_per_class: {meters[top1_base_per_class]:.4f} '
                              ).format(
-                epoch=epoch, epochs=num_epochs, step=i+1, steps=len(trainloader), meters=meters)
+                epoch=epoch, epochs=num_epochs, step=i+1, steps=len(base_trainloader), meters=meters)
 
             logger.info(logger_string)
             print(logger_string)
