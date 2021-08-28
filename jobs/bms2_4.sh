@@ -63,7 +63,7 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-python main2.py --dir ./logs2/ChestX --target_dataset ChestX --target_subset_split datasets/split_seed_1/ChestX_unlabeled_20.csv --bsize 256 --epochs 1000 --model resnet10
+python main2.py --dir ./logs2/ChestX --target_dataset ChestX --target_subset_split datasets/split_seed_1/ChestX_unlabeled_20.csv --bsize 128 --epochs 1000 --model resnet10
 
 wait
 
