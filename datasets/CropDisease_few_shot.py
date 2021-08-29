@@ -71,7 +71,7 @@ class SimpleDataset:
 
 class SetDataset:
     def __init__(self, batch_size, transform, split=None):
-        self.d = ImageFolder(configs.CropDisease_path + "/dataset/train/", transform=transform)
+        self.d = ImageFolder(configs.CropDisease_path , transform=transform)
         self.split = split
 
         if split is not None:
