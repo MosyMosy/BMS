@@ -224,12 +224,15 @@ def main(args):
     train_ind = ind[:int(0.9*len(ind))]
     val_ind = ind[int(0.9*len(ind)):]
 
-    trainset = dataset
+    trainset = torch.utils.data.Subset(dataset, train_ind)
+    valset = torch.utils.data.Subset(dataset_test, val_ind)
 
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.bsize,
                                               num_workers=args.num_workers,
                                               shuffle=True, drop_last=True)
-
+    valloader = torch.utils.data.DataLoader(valset, batch_size=args.bsize,
+                                            num_workers=args.num_workers,
+                                            shuffle=False, drop_last=False)
 
     # Generate trainset and valset for base dataset
     base_ind = torch.randperm(len(base_dataset))
@@ -313,7 +316,7 @@ def main(args):
 
                 # Validate to set the right loss
                 performance_val = validate(backbone, clf,
-                                           base_valloader,
+                                           base_valloader, valloader,
                                            best_epoch, args.epochs, logger, vallog, args, device, postfix='Validation')
 
                 loss_val = performance_val['Loss_test/avg']
@@ -340,7 +343,7 @@ def main(args):
     ###########################################
     if starting_epoch == 0:
         # Start by doing a learning rate test
-        lr_candidates = [1e-1, 5e-2, 3e-2, 1e-2, 5e-3, 3e-3, 1e-3]
+        lr_candidates = [1e-1]
 
         step = 50
 
@@ -381,7 +384,7 @@ def main(args):
 
             # compute the validation loss for picking learning rates
             perf_val = validate(backbone, clf,
-                                base_valloader,
+                                base_valloader, valloader,
                                 1, 1, logger, vallog, args, device, postfix='Validation',
                                 turn_off_sync=True)
             vals.append(perf_val['Loss_test/avg'])
@@ -441,7 +444,7 @@ def main(args):
 
             if (epoch == starting_epoch) or ((epoch + 1) % args.eval_freq == 0):
                 performance_val = validate(backbone, clf,
-                                           base_valloader,
+                                           base_valloader, valloader,
                                            epoch+1, args.epochs, logger, vallog, args, device, postfix='Validation')
 
                 loss_val = performance_val['Loss_test/avg']
@@ -512,6 +515,7 @@ def train(model, clf,
 
     end = time.time()
     for i, (X_base, y_base) in enumerate(base_trainloader):
+        
         meters.update('Data_time', time.time() - end)
 
         current_lr = optimizer.param_groups[0]['lr']
@@ -620,7 +624,7 @@ def train(model, clf,
 
 
 def validate(model, clf,
-             base_loader, epoch, num_epochs, logger,
+             base_loader, testloader, epoch, num_epochs, logger,
              testlog, args, device, postfix='Validation', turn_off_sync=False):
     meters = utils.AverageMeterSet()
     model.to(device)
@@ -628,32 +632,63 @@ def validate(model, clf,
     clf.eval()
 
     loss_ce = nn.CrossEntropyLoss()
+    mse_criterion = nn.MSELoss()
 
     end = time.time()
 
     logits_base_all = []
+    shifted_logits_base_all = []
     ys_base_all = []
     with torch.no_grad():
         # Compute the loss on the source base dataset
         for X_base, y_base in base_loader:
+            loader_iter = iter(testloader)
+            try:
+                (X1, X2), y = loader_iter.next()
+            except StopIteration:
+                loader_iter = iter(testloader)
+                (X1, X2), y = loader_iter.next()
+
+            X1 = X1.to(device)
+            X2 = X2.to(device)
+            y = y.to(device)
+
             X_base = X_base.to(device)
             y_base = y_base.to(device)
 
             features = model(X_base)
             logits_base = clf(features)
 
-            logits_base_all.append(logits_base)
-            ys_base_all.append(y_base)
+            source_affine = clone_BN_affine(model)
+            source_stat = clone_BN_stat(model)
 
+            #  shift the affine
+            f1 = model(X1)
+            f2 = model(X2)
+            shift_mean(model, source_stat, device)
+
+            shifted_features_base = model(X_base)
+            shifted_logits_base = clf(shifted_features_base)
+
+            # return values to the source
+            regret_affine(model, source_affine)
+
+            logits_base_all.append(logits_base)
+            shifted_logits_base_all.append(shifted_logits_base)
+            ys_base_all.append(y_base)
+            
     ys_base_all = torch.cat(ys_base_all, dim=0)
     logits_base_all = torch.cat(logits_base_all, dim=0)
+    shifted_logits_base_all =  torch.cat(shifted_logits_base_all, dim=0)
 
     loss_base = loss_ce(logits_base_all, ys_base_all)
+    loss_xtask = mse_criterion(shifted_logits_base_all, logits_base_all)
 
-    loss = loss_base
+    loss = loss_base + loss_xtask
 
     meters.update('CE_Loss_source_test', loss_base.item(), 1)
     meters.update('Loss_test', loss.item(), 1)
+    meters.update('MSE_Loss_target', loss_xtask.item(), 1)
 
     perf_base = utils.accuracy(logits_base_all.data,
                                ys_base_all.data, topk=(1, ))
@@ -667,6 +702,7 @@ def validate(model, clf,
     logger_string = ('{postfix} Epoch: [{epoch}/{epochs}]  Batch Time: {meters[Batch_time]:.4f} '
                      'Average Test Loss: {meters[Loss_test]:.4f} '
                      'Average CE Loss (Source): {meters[CE_Loss_source_test]: .4f} '
+                     'Average MSE Loss (Target): {meters[MSE_Loss_target]:.4f} '
                      'Top1_base_test: {meters[top1_base_test]:.4f} '
                      'Top1_base_test_per_class: {meters[top1_base_test_per_class]:.4f} ').format(
         postfix=postfix, epoch=epoch, epochs=num_epochs, meters=meters)
