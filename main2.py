@@ -224,15 +224,12 @@ def main(args):
     train_ind = ind[:int(0.9*len(ind))]
     val_ind = ind[int(0.9*len(ind)):]
 
-    trainset = torch.utils.data.Subset(dataset, train_ind)
-    valset = torch.utils.data.Subset(dataset_test, val_ind)
+    trainset = dataset
 
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.bsize,
                                               num_workers=args.num_workers,
                                               shuffle=True, drop_last=True)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=args.bsize,
-                                            num_workers=args.num_workers,
-                                            shuffle=False, drop_last=False)
+
 
     # Generate trainset and valset for base dataset
     base_ind = torch.randperm(len(base_dataset))
@@ -509,7 +506,7 @@ def train(model, clf,
     clf.train()
 
     mse_criterion = nn.MSELoss()
-    nll_criterion = nn.NLLLoss(reduction='mean')
+    loss_ce = nn.CrossEntropyLoss()
 
     loader_iter = iter(trainloader)
 
@@ -536,12 +533,9 @@ def train(model, clf,
 
         optimizer.zero_grad()
 
-        # cross entropy loss on the base dataset
         features_base = model(X_base)
         logits_base = clf(features_base)
-        log_probability_base = F.log_softmax(logits_base, dim=1)
 
-        # compute output
         source_affine = clone_BN_affine(model)
         source_stat = clone_BN_stat(model)
 
@@ -552,17 +546,14 @@ def train(model, clf,
 
         shifted_features_base = model(X_base)
         shifted_logits_base = clf(shifted_features_base)
-        shifted_log_probability_base = F.log_softmax(
-            shifted_logits_base, dim=1)
 
         # return values to the source
         regret_affine(model, source_affine)
 
-        loss_base = nll_criterion(log_probability_base, y_base)
-        loss_xtask = mse_criterion(
-            shifted_log_probability_base, log_probability_base)
+        loss_base = loss_ce(logits_base, y_base)
+        loss_xtask = mse_criterion(logits_base, shifted_logits_base)
 
-        loss = loss_base
+        loss = loss_base + loss_xtask
 
         loss.backward()
         optimizer.step()
@@ -636,7 +627,7 @@ def validate(model, clf,
     model.eval()
     clf.eval()
 
-    nll_criterion = nn.NLLLoss(reduction='mean')
+    loss_ce = nn.CrossEntropyLoss()
 
     end = time.time()
 
@@ -657,9 +648,7 @@ def validate(model, clf,
     ys_base_all = torch.cat(ys_base_all, dim=0)
     logits_base_all = torch.cat(logits_base_all, dim=0)
 
-    log_probability_base = F.log_softmax(logits_base_all, dim=1)
-
-    loss_base = nll_criterion(log_probability_base, ys_base_all)
+    loss_base = loss_ce(logits_base_all, ys_base_all)
 
     loss = loss_base
 
