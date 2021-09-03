@@ -784,7 +784,7 @@ def regret_stat(model, source_stat):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='STARTUP')
-    parser.add_argument('--dir', type=str, default='./logs2/EuroSAT',
+    parser.add_argument('--dir', type=str, default='./logs/BMS_in/EuroSAT',
                         help='directory to save the checkpoints')
 
     parser.add_argument('--bsize', type=int, default=32,
