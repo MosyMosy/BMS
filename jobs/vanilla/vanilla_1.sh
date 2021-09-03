@@ -5,7 +5,7 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=bms2_2
+#SBATCH --job-name=vanilla_1
 #SBATCH --output=%x-%j.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
@@ -63,7 +63,10 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-python main2.py --dir ./logs2/ISIC --target_dataset ISIC --target_subset_split datasets/split_seed_1/ISIC_unlabeled_20.csv --bsize 128 --epochs 1000 --model resnet10
+
+target_testset = "EuroSAT"
+
+python vanilla.py --dir ./logs/vanilla/$target_testset --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 128 --epochs 1000 --model resnet10
 
 wait
 
@@ -72,4 +75,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs2/ ~/scratch/BMS/
+cp -r $SLURM_TMPDIR/BMS/logs/vanilla/$target_testset/ ~/scratch/BMS/logs/vanilla/
