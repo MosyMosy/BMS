@@ -65,7 +65,7 @@ cd $SLURM_TMPDIR
 cd BMS
 target_testset="ChestX"
 
-python vanilla.py --dir ./logs/vanilla/$target_testset --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 1000 --model resnet10
+python vanilla.py --dir ./logs/vanilla/$target_testset --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 600 --model resnet10
 
 wait
 
