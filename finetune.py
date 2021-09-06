@@ -291,7 +291,7 @@ if __name__ == '__main__':
     parser.add_argument('--freeze_backbone', action='store_true',
                         help='Freeze the backbone network for finetuning')
     parser.add_argument('--seed', default=1, type=int, help='random seed')
-    parser.add_argument('--embedding_load_path', type=str, default='./logs/EuroSAT/checkpoint_best.pkl',
+    parser.add_argument('--embedding_load_path', type=str, default='./logs/AdaBN/EuroSAT/checkpoint_2.pkl',
                         help='path to load embedding')
     parser.add_argument('--embedding_load_path_version', type=int, default=1,
                         help='how to load the embedding')
