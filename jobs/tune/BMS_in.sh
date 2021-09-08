@@ -5,13 +5,13 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=BMS_in_1
+#SBATCH --job-name=BMS_in_tune
 #SBATCH --output=%x-%j.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=32
 #SBATCH --mem=127000M
-#SBATCH --time=3-00:00
+#SBATCH --time=2-00:00
 #SBATCH --account=rrg-ebrahimi
 
 nvidia-smi
@@ -63,10 +63,10 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-
-target_testset="EuroSAT"
-
-python BMS_in.py --dir ./logs/BMS_in/$target_testset --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 128 --epochs 1000 --model resnet10
+python finetune.py --save_dir ./logs/BMS_in/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/BMS_in/EuroSAT/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/BMS_in/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/BMS_in/CropDisease/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/BMS_in/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/BMS_in/ISIC/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/BMS_in/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/BMS_in/ChestX/checkpoint_best.pkl --freeze_backbone &
 
 wait
 
@@ -75,4 +75,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/BMS_in/$target_testset/ ~/scratch/BMS/logs/BMS_in/
+cp -r $SLURM_TMPDIR/BMS/logs/BMS_in/ ~/scratch/BMS/logs/

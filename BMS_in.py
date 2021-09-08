@@ -515,7 +515,7 @@ def train(model, clf,
 
     end = time.time()
     for i, (X_base, y_base) in enumerate(base_trainloader):
-
+        
         meters.update('Data_time', time.time() - end)
 
         current_lr = optimizer.param_groups[0]['lr']
@@ -676,10 +676,10 @@ def validate(model, clf,
             logits_base_all.append(logits_base)
             shifted_logits_base_all.append(shifted_logits_base)
             ys_base_all.append(y_base)
-
+            
     ys_base_all = torch.cat(ys_base_all, dim=0)
     logits_base_all = torch.cat(logits_base_all, dim=0)
-    shifted_logits_base_all = torch.cat(shifted_logits_base_all, dim=0)
+    shifted_logits_base_all =  torch.cat(shifted_logits_base_all, dim=0)
 
     loss_base = loss_ce(logits_base_all, ys_base_all)
     loss_xtask = mse_criterion(shifted_logits_base_all, logits_base_all)
@@ -784,7 +784,7 @@ def regret_stat(model, source_stat):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='STARTUP')
-    parser.add_argument('--dir', type=str, default='./logs/BMS_in/EuroSAT',
+    parser.add_argument('--dir', type=str, default='./logs/vanilla/EuroSAT',
                         help='directory to save the checkpoints')
 
     parser.add_argument('--bsize', type=int, default=32,

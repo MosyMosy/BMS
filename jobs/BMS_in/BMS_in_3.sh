@@ -5,7 +5,7 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=BMS_in_1
+#SBATCH --job-name=BMS_in_3
 #SBATCH --output=%x-%j.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
@@ -63,8 +63,7 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-
-target_testset="EuroSAT"
+target_testset="CropDisease"
 
 python BMS_in.py --dir ./logs/BMS_in/$target_testset --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 128 --epochs 1000 --model resnet10
 
