@@ -736,7 +736,7 @@ def shift_mean(model, source_stat, device):
             shift_value = (target_mean - source_mean)
             total_shift += torch.sum(shift_value)
             # shift bias
-            layer.bias = nn.Parameter(layer.bias - ((torch.rand(len(source_mean)).to(
+            layer.bias = nn.Parameter(layer.bias + ((torch.rand(len(source_mean)).to(
                 device) * shift_value.to(device)).to(
                     device) * layer.weight / source_var)).to(device)
             i += 1
