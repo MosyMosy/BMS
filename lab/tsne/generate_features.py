@@ -1,15 +1,12 @@
 from collections import OrderedDict
 
-import matplotlib.pyplot as plt
 # import seaborn as sns
 import torch
-# from openTSNE import TSNE
-# from seaborn.palettes import color_palette
+
 
 import models
 from datasets import (Chest_few_shot, CropDisease_few_shot, EuroSAT_few_shot,
-                      ImageNet_few_shot, ISIC_few_shot, miniImageNet_few_shot,
-                      tiered_ImageNet_few_shot)
+                      ISIC_few_shot, miniImageNet_few_shot)
 
 
 def load_checkpoint(model, load_path, device):
@@ -87,10 +84,8 @@ vanilla_models.append(baseline_model)
 for name in dataset_names_list[1:]:
     vanilla_models.append(models.ResNet10())
     load_checkpoint2(vanilla_models[-1],
-                    'logs/vanilla/{0}/checkpoint_best.pkl'.format(name), device)
+                     'logs/vanilla/{0}/checkpoint_best.pkl'.format(name), device)
     vanilla_models[-1].eval()
-
-
 
 
 label_dataset = []
@@ -108,18 +103,8 @@ with torch.no_grad():
 
     base_features = torch.stack(base_features)
     bms_feature = torch.stack(bms_feature)
-    
+    label_dataset = torch.stack(label_dataset)
+
     torch.save(base_features, 't-sne_base_features.pt')
     torch.save(bms_feature, 't-sne_bms_feature.pt')
-
-    # base_embedding = TSNE().fit(base_features.numpy())
-    # bms_embedding = TSNE().fit(bms_feature.numpy())
-    # fig, ax = plt.subplots(1, 2,figsize=(10,5))
-    # color = sns.color_palette(n_colors=len(dataloader_list))
-    # sns.kdeplot(x=base_embedding[:, 0], y=base_embedding[:, 1],
-    #             hue=label_dataset, ax=ax[0], palette=color).set(title='baseline')
-    # sns.kdeplot(x=bms_embedding[:, 0], y=bms_embedding[:, 1], 
-    #             hue=label_dataset, ax=ax[1], palette=color).set(title='BMS')
-    # plt.savefig("t-sne_kde.pdf")
-    
-    # plt.show()
+    torch.save(label_dataset, 't-sne_label_dataset.pt')

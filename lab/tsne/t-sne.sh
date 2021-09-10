@@ -62,9 +62,7 @@ echo "---------------------------------------<Run the program>------------------
 date +"%T"
 cd $SLURM_TMPDIR
 
-cd BMS
-
-
+cd BMS/lab/tsne
 python t-sne.py
 
 echo "-----------------------------------<End of run the program>---------------------------------"
@@ -72,4 +70,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/t-sne* ~/scratch/BMS/
+cp -r $SLURM_TMPDIR/BMS/lab/tsne/ ~/scratch/BMS/lab/
