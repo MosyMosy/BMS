@@ -63,7 +63,7 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS/lab/tsne
-python t-sne.py
+python generate_features.py
 
 echo "-----------------------------------<End of run the program>---------------------------------"
 date +"%T"
