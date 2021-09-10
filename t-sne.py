@@ -1,10 +1,10 @@
 from collections import OrderedDict
 
 import matplotlib.pyplot as plt
-import seaborn as sns
+# import seaborn as sns
 import torch
-from openTSNE import TSNE
-from seaborn.palettes import color_palette
+# from openTSNE import TSNE
+# from seaborn.palettes import color_palette
 
 import models
 from datasets import (Chest_few_shot, CropDisease_few_shot, EuroSAT_few_shot,
