@@ -1,1 +1,1 @@
-from lab import tsne
+from lab.tsne import generate_features

@@ -5,7 +5,7 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=vanilla_to_all
+#SBATCH --job-name=lab
 #SBATCH --output=%x-%j.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
@@ -63,16 +63,13 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-# python finetune.py --save_dir ./logs/vanilla/EuroSAT/to_all --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/vanilla/EuroSAT/checkpoint_best.pkl --freeze_backbone &
-python finetune.py --save_dir ./logs/vanilla/EuroSAT/to_all --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/vanilla/EuroSAT/checkpoint_best.pkl --freeze_backbone &
-python finetune.py --save_dir ./logs/vanilla/EuroSAT/to_all --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/vanilla/EuroSAT/checkpoint_best.pkl --freeze_backbone &
-python finetune.py --save_dir ./logs/vanilla/EuroSAT/to_all --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/vanilla/EuroSAT/checkpoint_best.pkl --freeze_backbone &
 
-wait
+
+python lab.py
 
 echo "-----------------------------------<End of run the program>---------------------------------"
 date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/vanilla/EuroSAT/to_all/ ~/scratch/BMS/logs/vanilla/EuroSAT/
+cp -r $SLURM_TMPDIR/BMS/lab/tsne/ ~/scratch/BMS/lab/
