@@ -5,7 +5,7 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=t-sne
+#SBATCH --job-name=tsne
 #SBATCH --output=%x-%j.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
@@ -63,6 +63,8 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS/lab/tsne
+
+
 python generate_features.py
 
 echo "-----------------------------------<End of run the program>---------------------------------"
