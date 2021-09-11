@@ -104,8 +104,8 @@ with torch.no_grad():
     base_features = torch.stack(base_features)
     bms_feature = torch.stack(bms_feature)
 
-    torch.save(base_features, 't-sne_base_features.pt')
-    torch.save(bms_feature, 't-sne_bms_feature.pt')
-    with open('t-sne_label_dataset.txt', 'w') as filehandle:
+    torch.save(base_features, './lab/tsne/t-sne_base_features.pt')
+    torch.save(bms_feature, './lab/tsne/t-sne_bms_feature.pt')
+    with open('./lab/tsne/t-sne_label_dataset.txt', 'w') as filehandle:
         for listitem in label_dataset:
             filehandle.write('%s\n' % listitem)
