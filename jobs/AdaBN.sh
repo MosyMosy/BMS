@@ -65,7 +65,7 @@ cd $SLURM_TMPDIR
 cd BMS
 
 target_testset="EuroSAT"
-for target_testset in "ChestX" "ISIC" "EuroSAT" "CropDisease" "miniImageNet_test"
+for target_testset in "ChestX" "ISIC" "EuroSAT" "CropDisease"
 do
     python AdaBN.py --dir ./logs/AdaBN/$target_testset --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 10 --model resnet10 &
 done
@@ -76,4 +76,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/AdaBN/$target_testset/ ~/scratch/BMS/logs/AdaBN/
+cp -r $SLURM_TMPDIR/BMS/logs/AdaBN/ ~/scratch/BMS/logs/
