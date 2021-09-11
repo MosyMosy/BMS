@@ -75,4 +75,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/vanilla/EuroSAT/to_all/ ~/scratch/BMS/logs/vanilla/EuroSAT/
+cp -r $SLURM_TMPDIR/BMS/logs/vanilla/ChestX/to_all/ ~/scratch/BMS/logs/vanilla/ChestX/
