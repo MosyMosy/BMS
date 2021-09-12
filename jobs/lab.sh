@@ -72,4 +72,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/lab/tsne/ ~/scratch/BMS/lab/
+cp -r $SLURM_TMPDIR/BMS/*.pdf ~/scratch/BMS/lab/layers
