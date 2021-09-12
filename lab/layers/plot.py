@@ -76,11 +76,7 @@ def get_BN_output(model, colors, layers=None, ):
     return flat_list, labels, ListedColormap(newcolors, name='OrangeBlue')
 
 
-if torch.cuda.is_available():
-    dev = "cuda:0"
-else:
-    dev = "cpu"
-device = torch.device(dev)
+device = torch.device("cpu")
 
 model_names = ['Baseline', 'BMS_Eurosat', 'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
 models = []
