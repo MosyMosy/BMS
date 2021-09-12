@@ -2,18 +2,17 @@ from collections import OrderedDict
 
 import joypy
 import matplotlib
-from matplotlib import cm
-from matplotlib import pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
-
 import numpy as np
 import pandas as pd
-from scipy.stats.stats import mode
 import torch
 import torch.nn as nn
 from datasets import (Chest_few_shot, CropDisease_few_shot, EuroSAT_few_shot,
                       ISIC_few_shot, miniImageNet_few_shot)
 from lab.layers.resnet10 import ResNet10
+from matplotlib import cm
+from matplotlib import pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+from scipy.stats.stats import mode
 
 
 def load_checkpoint(model, load_path, device):
@@ -51,8 +50,7 @@ def load_checkpoint2(model, load_path, device):
     return model
 
 
-def get_BN_output(model, layers=None):
-    colors = ['#990033', '#FF6699']  # first color is black, last is red
+def get_BN_output(model, colors, layers=None, ):
     newcolors = []
     labels = []
     flat_list = []
@@ -61,7 +59,7 @@ def get_BN_output(model, layers=None):
     for layer in model.modules():
         if isinstance(layer, nn.BatchNorm2d):
             if (layers is None) or (i in layers):
-                
+
                 out = (layer.output.permute(
                     1, 0, 2, 3).mean([2, 3])).tolist()
 
@@ -77,20 +75,24 @@ def get_BN_output(model, layers=None):
             i += 1
     return flat_list, labels, ListedColormap(newcolors, name='OrangeBlue')
 
+
 if torch.cuda.is_available():
     dev = "cuda:0"
 else:
     dev = "cpu"
 device = torch.device(dev)
 
-model_names = ['Baseline','BMS_Eurosat','AdaBN_EuroSAT']
+model_names = ['Baseline', 'BMS_Eurosat', 'AdaBN_EuroSAT']
 models = []
-models.append(load_checkpoint(ResNet10(), 'logs/AdaBN/teacher_miniImageNet/399.tar', device))
-models.append(load_checkpoint2(ResNet10(), 'logs/vanilla/EuroSAT/checkpoint_best.pkl', device))
-models.append(load_checkpoint2(ResNet10(), 'logs/AdaBN/EuroSAT/checkpoint_best.pkl', device))
+models.append(load_checkpoint(
+    ResNet10(), 'logs/AdaBN/teacher_miniImageNet/399.tar', device))
+models.append(load_checkpoint2(
+    ResNet10(), 'logs/vanilla/EuroSAT/checkpoint_best.pkl', device))
+models.append(load_checkpoint2(
+    ResNet10(), 'logs/AdaBN/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 16
+b_size = 64
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -115,32 +117,21 @@ base_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
 EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
-# baseline_model(base_x)
-# baseline_BN_base_out = get_BN_output(baseline_model)
-# baseline_model(EuroSAT_x)
-# baseline_BN_EuroSAT_out = get_BN_output(baseline_model)
-
-# EuroSAT_model(base_x)
-# EuroSAT_BN_base_out = get_BN_output(EuroSAT_model)
-# EuroSAT_model(EuroSAT_x)
-# EuroSAT_BN_EuroSAT_out = get_BN_output(EuroSAT_model)
-
-# The EuroSAT
-
-layers=None
+layers = None
+colors = [['#670022', '#FF6699'], [
+    '#004668', '#66D2FF'], ['#9B2802', '#FF9966']]
 for i, model in enumerate(models):
     model(EuroSAT_x)
-    out, labels, clm = get_BN_output(model, layers=layers)
+    out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
     joypy.joyplot(out, labels=labels, overlap=2, grid=True,
-                colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2,2))
+                  colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
     # plt.show()
-    plt.savefig("{}_to_Eurosat.pdf".format(model_names[i]))
+    plt.savefig("./lab/layers/{}_to_EuroSAT.pdf".format(model_names[i]))
     print(i)
     model(base_x)
-    out, labels, clm = get_BN_output(model, layers=layers)
+    out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
     joypy.joyplot(out, labels=labels, overlap=2, grid=True,
-                colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2,2))
+                  colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
     # plt.show()
-    plt.savefig("{}_to_MiniImageNet.pdf".format(model_names[i]))
+    plt.savefig("./lab/layers/{}_to_MiniImageNet.pdf".format(model_names[i]))
     print(i)
-    

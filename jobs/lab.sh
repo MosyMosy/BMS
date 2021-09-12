@@ -11,7 +11,7 @@
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=32
 #SBATCH --mem=127000M
-#SBATCH --time=0-08:00
+#SBATCH --time=1-00:00
 #SBATCH --account=rrg-ebrahimi
 
 nvidia-smi
@@ -72,4 +72,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/*.pdf ~/scratch/BMS/lab/layers
+cp -r $SLURM_TMPDIR/BMS/lab/layers/ ~/scratch/BMS/lab/
