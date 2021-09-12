@@ -82,7 +82,7 @@ else:
     dev = "cpu"
 device = torch.device(dev)
 
-model_names = ['Baseline', 'BMS_Eurosat', 'AdaBN_EuroSAT']
+model_names = ['Baseline', 'BMS_Eurosat', 'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
 models = []
 models.append(load_checkpoint(
     ResNet10(), 'logs/AdaBN/teacher_miniImageNet/399.tar', device))
@@ -90,6 +90,8 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/vanilla/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
     ResNet10(), 'logs/AdaBN/EuroSAT/checkpoint_best.pkl', device))
+models.append(load_checkpoint2(
+    ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
 b_size = 64
@@ -118,8 +120,8 @@ EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
 layers = None
-colors = [['#670022', '#FF6699'], [
-    '#004668', '#66D2FF'], ['#9B2802', '#FF9966']]
+colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
+          ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 for i, model in enumerate(models):
     model(EuroSAT_x)
     out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
