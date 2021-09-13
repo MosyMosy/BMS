@@ -115,21 +115,22 @@ base_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
 EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
-layers = None
-colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
-          ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
-for i, model in enumerate(models):
-    model(EuroSAT_x)
-    out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
-    joypy.joyplot(out, labels=labels, overlap=2, grid=True,
-                  colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
-    # plt.show()
-    plt.savefig("./lab/layers/{}_to_EuroSAT.pdf".format(model_names[i]))
-    print(i)
-    model(base_x)
-    out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
-    joypy.joyplot(out, labels=labels, overlap=2, grid=True,
-                  colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
-    # plt.show()
-    plt.savefig("./lab/layers/{}_to_MiniImageNet.pdf".format(model_names[i]))
-    print(i)
+for l in [11]: # range(12):
+    layers = [l]
+    colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
+            ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
+    for i, model in enumerate(models):
+        model(EuroSAT_x)
+        out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
+        joypy.joyplot(out, labels=labels, overlap=2, grid=True,
+                    colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
+        # plt.show()
+        plt.savefig("./lab/layers/{0}_to_EuroSAT_layer{1}.pdf".format(model_names[i],l))
+        print(i)
+        model(base_x)
+        out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
+        joypy.joyplot(out, labels=labels, overlap=2, grid=True,
+                    colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
+        # plt.show()
+        plt.savefig("./lab/layers/{0}_to_MiniImageNet_layer{1}.pdf".format(model_names[i],l))
+        print(i)
