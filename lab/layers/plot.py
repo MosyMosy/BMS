@@ -54,7 +54,7 @@ def get_BN_output(model, colors, layers=None, flatten=False):
     newcolors = []
     labels = []
     BN_list = []
-    
+
     i = 0
     for layer in model.modules():
         if isinstance(layer, nn.BatchNorm2d):
@@ -71,14 +71,14 @@ def get_BN_output(model, colors, layers=None, flatten=False):
                         flat_list += channel
                     else:
                         flat_list.append(channel)
-                
-                l = ['Layer {0:02d} - mean: {1:0.2f}, STD: {2:0.2f}'.format(i+1, statistics.mean(flat_list), statistics.stdev(flat_list))]       
+
                 if flatten:
                     BN_list.append(flat_list)
-                    labels += l
+                    labels += ['Layer {0:02d} ({1: 0.2f}, {2: 0.2f})'.format(
+                        i+1, statistics.mean(flat_list), statistics.stdev(flat_list))]
                 else:
                     BN_list += flat_list
-                    labels += l+[None]*(len(out)-1)
+                    labels += [None]*(len(out)-1)
 
                     clm = LinearSegmentedColormap.from_list(
                         "Custom", colors, N=len(out))
@@ -92,7 +92,7 @@ def get_BN_output(model, colors, layers=None, flatten=False):
             "Custom", colors, N=i)
         temp = clm(range(0, i))
         for c in temp:
-            newcolors.append(c)            
+            newcolors.append(c)
 
     return BN_list, labels, ListedColormap(newcolors, name='custom')
 
@@ -138,26 +138,26 @@ base_x, _ = iter(base_loader).next()
 
 layers = range(12)
 colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
-            ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
+          ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 for i, model in enumerate(models):
     with torch.no_grad():
         model(EuroSAT_x)
         Euro_out, labels, clm = get_BN_output(
             model, colors=colors[i], layers=layers, flatten=True)
-        
+
         model(base_x)
         mini_out, labels, clm = get_BN_output(
             model, colors=colors[i], layers=layers, flatten=True)
 
-        args = {'labels': list(reversed(labels)), 'overlap': 2,
-                'colormap': clm, 'linecolor': 'black', 'linewidth': 0.0,
-                'background': 'w',  'alpha':0.8,
-                'grid': True, 'hist': False, 'bins': int(len(base_x)/4)}
+        args = {'labels': list(reversed(labels)), 'overlap': 2, 'bw_method': 0.2,
+                'colormap': clm, 'linewidth': 0.2, 'x_range':[-2, 2], 'linecolor':'black',
+                'background': 'w',  'alpha': 0.8, 'figsize':(10,7), 'fill':True,
+                'grid': False, 'kind':'kde', 'hist': False, 'bins': int(len(base_x))}
 
         joypy.joyplot(list(reversed(Euro_out)), **args)
         # plt.show()
         plt.savefig(
-            "./lab/layers/{0}_to_EuroSAT.pdf".format(model_names[i]))
+            "./lab/layers/{0}_to_EuroSAT.pdf".format(model_names[i]),)
         print(i)
 
         joypy.joyplot(list(reversed(mini_out)), **args)
