@@ -50,30 +50,52 @@ def load_checkpoint2(model, load_path, device):
     return model
 
 
-def get_BN_output(model, colors, layers=None, ):
+def get_BN_output(model, colors, layers=None, flatten=False):
     newcolors = []
     labels = []
-    flat_list = []
+    channel_list = []
 
     i = 0
     for layer in model.modules():
         if isinstance(layer, nn.BatchNorm2d):
             if (layers is None) or (i in layers):
-
+                flat_list = []
+                out = layer.output / \
+                    layer.weight[None, :, None, None] - \
+                    layer.bias[None, :, None, None]
                 out = (layer.output.permute(
                     1, 0, 2, 3).mean([2, 3])).tolist()
 
-                labels += ['Layer {}'.format(i+1)]+[None]*(len(out)-1)
-                clm = LinearSegmentedColormap.from_list(
-                    "Custom", colors, N=len(out))
-                temp = clm(range(0, len(out)))
-                for c in temp:
-                    newcolors.append(c)
+                if flatten:
+                    labels += ['Layer {0:02d}'.format(i+1)]
+                else:
+                    labels += ['Layer {0:02d}'.format(i+1)]+[None]*(len(out)-1)
 
-                for item in out:
-                    flat_list.append(item)
+                    clm = LinearSegmentedColormap.from_list(
+                        "Custom", colors, N=len(out))
+                    temp = clm(range(0, len(out)))
+                    for c in temp:
+                        newcolors.append(c)
+
+                for channel in out:
+                    if flatten:
+                        flat_list += channel
+                    else:
+                        flat_list.append(channel)
+                if flatten:
+                    channel_list.append(flat_list)
+                else:
+                    channel_list += flat_list
+
             i += 1
-    return flat_list, labels, ListedColormap(newcolors, name='OrangeBlue')
+    if flatten:
+        clm = LinearSegmentedColormap.from_list(
+            "Custom", colors, N=i)
+        temp = clm(range(0, i))
+        for c in temp:
+            newcolors.append(c)
+
+    return channel_list, labels, ListedColormap(newcolors, name='OrangeBlue')
 
 
 device = torch.device("cpu")
@@ -90,7 +112,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 64
+b_size = 128
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -115,22 +137,33 @@ base_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
 EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
-for l in [11]: # range(12):
-    layers = [l]
+
+for l in [1]:  # range(12):
+    layers = range(12)
     colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
-            ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
+              ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
     for i, model in enumerate(models):
-        model(EuroSAT_x)
-        out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
-        joypy.joyplot(out, labels=labels, overlap=2, grid=True,
-                    colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
-        # plt.show()
-        plt.savefig("./lab/layers/{0}_to_EuroSAT_layer{1}.pdf".format(model_names[i],l))
-        print(i)
-        model(base_x)
-        out, labels, clm = get_BN_output(model, colors=colors[i], layers=layers)
-        joypy.joyplot(out, labels=labels, overlap=2, grid=True,
-                    colormap=clm, linecolor='w', linewidth=0.2, x_range=(-2.5, 2.5))
-        # plt.show()
-        plt.savefig("./lab/layers/{0}_to_MiniImageNet_layer{1}.pdf".format(model_names[i],l))
-        print(i)
+        with torch.no_grad():
+            model(EuroSAT_x)
+            mini_out, labels, clm = get_BN_output(
+                model, colors=colors[i], layers=layers, flatten=True)
+            model(base_x)
+            Euro_out, labels, clm = get_BN_output(
+                model, colors=colors[i], layers=layers, flatten=True)
+
+            args = {'labels': list(reversed(labels)), 'overlap': 2,
+                    'colormap': clm, 'linecolor': 'black', 'linewidth': 0.0,
+                    'background': 'w', 'x_range':[-2, 2],
+                    'grid': True, 'hist': False, 'bins': int(len(base_x)/4)}
+
+            joypy.joyplot(list(reversed(mini_out)), **args)
+            # plt.show()
+            plt.savefig(
+                "./lab/layers/{0}_to_EuroSAT_layer{1}.pdf".format(model_names[i], l))
+            print(i)
+
+            joypy.joyplot(list(reversed(Euro_out)), **args)
+            # plt.show()
+            plt.savefig(
+                "./lab/layers/{0}_to_MiniImageNet_layer{1}.pdf".format(model_names[i], l))
+            print(i)

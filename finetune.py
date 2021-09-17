@@ -272,7 +272,7 @@ if __name__ == '__main__':
                         default='miniImageNet', help='source_dataset')
     parser.add_argument('--target_dataset', default='EuroSAT',
                         help='test target dataset')
-    parser.add_argument('--subset_split', type=str, default='datasets/split_seed_1/EuroSAT_labeled_80.csv',
+    parser.add_argument('--subset_split', type=str,
                         help='path to the csv files that contains the split of the data')
     parser.add_argument('--image_size', type=int, default=224,
                         help='Resolution of the input image')
