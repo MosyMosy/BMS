@@ -14,6 +14,8 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from scipy.stats.stats import mode
 
+from PIL import Image
+
 
 def load_checkpoint(model, load_path, device):
     '''
@@ -50,10 +52,14 @@ def load_checkpoint2(model, load_path, device):
     return model
 
 
-def get_BN_output(model, colors, layers=None, flatten=False):
+def get_BN_output(model, colors, layers=None):
     newcolors = []
     labels = []
     BN_list = []
+    if layers is None:
+        flatten = True
+    else: 
+        flatten = False
 
     i = 0
     for layer in model.modules():
@@ -78,6 +84,7 @@ def get_BN_output(model, colors, layers=None, flatten=False):
                         i+1, statistics.mean(flat_list), statistics.stdev(flat_list))]
                 else:
                     BN_list += flat_list
+                    labels += ['Layer {0:02d}'.format(i+1)]
                     labels += [None]*(len(out)-1)
 
                     clm = LinearSegmentedColormap.from_list(
@@ -97,12 +104,28 @@ def get_BN_output(model, colors, layers=None, flatten=False):
     return BN_list, labels, ListedColormap(newcolors, name='custom')
 
 
+def to_grid(path_list):
+    out = "lab/layers/grid.png"
+    blank_image = None
+    top_left = (0, 0)
+    for i in range(0, len(path_list), 2):
+        left = Image.open(path_list[i], mode='r')
+        right = Image.open(path_list[i+1], mode='r')
+        if blank_image is None:
+            blank_image = Image.new(mode='RGB', size=(left.width * 2, right.height * 4 ))
+        blank_image.paste(left, top_left)
+        top_left = (top_left[0] + left.width, top_left[1])
+        blank_image.paste(right, top_left)
+        top_left = (0, top_left[1] + right.height)
+    blank_image.save(out)
+
+
 device = torch.device("cpu")
 
 model_names = ['Baseline', 'BMS_Eurosat', 'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
 models = []
-models.append(load_checkpoint(
-    ResNet10(), 'logs/AdaBN/teacher_miniImageNet/399.tar', device))
+models.append(load_checkpoint2(
+    ResNet10(), 'logs/baseline/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
     ResNet10(), 'logs/vanilla/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
@@ -111,7 +134,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 32
+b_size = 128
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -136,32 +159,36 @@ base_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
 EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
-layers = range(12)
+layers = [0] # None is for full network
+
 colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
           ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
+
+path_list = []
 for i, model in enumerate(models):
     with torch.no_grad():
-        model(EuroSAT_x)
-        Euro_out, labels, clm = get_BN_output(
-            model, colors=colors[i], layers=layers, flatten=True)
-
         model(base_x)
-        mini_out, labels, clm = get_BN_output(
-            model, colors=colors[i], layers=layers, flatten=True)
+        mini_out, mini_labels, clm = get_BN_output(
+            model, colors=colors[i], layers=layers)
+        
+        model(EuroSAT_x)
+        Euro_out, EuroSAT_labels, clm = get_BN_output(
+            model, colors=colors[i], layers=layers)
+        
+        args = {'overlap': 2, 'bw_method': 0.2,
+                'colormap': clm, 'linewidth': 0.2, 'x_range': [-2, 2], 'linecolor': 'black',
+                'background': 'w',  'alpha': 0.8, 'figsize': (10, 7), 'fill': True,
+                'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
 
-        args = {'labels': list(reversed(labels)), 'overlap': 2, 'bw_method': 0.2,
-                'colormap': clm, 'linewidth': 0.2, 'x_range':[-2, 2], 'linecolor':'black',
-                'background': 'w',  'alpha': 0.8, 'figsize':(10,7), 'fill':True,
-                'grid': False, 'kind':'kde', 'hist': False, 'bins': int(len(base_x))}
-
-        joypy.joyplot(list(reversed(Euro_out)), **args)
+        joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
         # plt.show()
-        plt.savefig(
-            "./lab/layers/{0}_to_EuroSAT.pdf".format(model_names[i]),)
-        print(i)
+        path_list.append(
+            "./lab/layers/{0}_to_MiniImageNet.png".format(model_names[i]))
+        plt.savefig(path_list[-1],)
 
-        joypy.joyplot(list(reversed(mini_out)), **args)
+        joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
         # plt.show()
-        plt.savefig(
-            "./lab/layers/{0}_to_MiniImageNet.pdf".format(model_names[i]))
-        print(i)
+        path_list.append(
+            "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
+        plt.savefig(path_list[-1],)
+to_grid(path_list)
