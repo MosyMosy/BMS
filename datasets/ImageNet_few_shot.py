@@ -54,7 +54,7 @@ class SimpleDataset:
         self.target_transform = target_transform
 
         self.d = ImageFolder(
-            configs.ImageNet_path, transform=transform, target_transform=target_transform)
+            configs.ImageNet_test_path, transform=transform, target_transform=target_transform)
         self.split = split
         if split is not None:
             print("Using Split")
