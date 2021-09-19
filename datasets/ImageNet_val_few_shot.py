@@ -25,55 +25,30 @@ def identity(x): return x
 
 
 def construct_subset(dataset, split):
-    split = pd.read_csv(split)['img_path'].values
-    root = dataset.root
-
-    class_to_idx = dataset.class_to_idx
+    df = pd.read_csv(split)
+    images = df['img_path'].values
+    targets = df['targets'].values
+    u_targets = np.unique(targets)
 
     # create targets
-    targets = [class_to_idx[os.path.dirname(i)] for i in split]
+    targets_id = [np.where(u_targets==t)[0] for t in targets]
 
-    # image_names = np.array([i[0] for i in dataset.imgs])
-
-    # # ind
-    # ind = np.concatenate(
-    #     [np.where(image_names == os.path.join(root, j))[0] for j in split])
-
-    image_names = [os.path.join(root, j) for j in split]
+    image_names = [os.path.join(configs.ImageNet_test_path, im) for im in images]
     dataset_subset = copy.deepcopy(dataset)
 
-    dataset_subset.samples = [j for j in zip(image_names, targets)]
+    dataset_subset.samples = [j for j in zip(image_names, targets_id)]
     dataset_subset.imgs = dataset_subset.samples
-    dataset_subset.targets = targets
+    dataset_subset.targets = targets_id
+    dataset_subset.classes = targets
     return dataset_subset
-
-
-class SimpleDataset:
-    def __init__(self, transform, target_transform=identity, split=None):
-        self.transform = transform
-        self.target_transform = target_transform
-
-        self.d = ImageFolder(
-            configs.ImageNet_test_path, transform=transform, target_transform=target_transform)
-        self.split = split
-        if split is not None:
-            print("Using Split")
-            self.d = construct_subset(self.d, split)
-
-    def __getitem__(self, i):
-        return self.d[i]
-
-    def __len__(self):
-        return len(self.d)
-
 
 class SetDataset:
     def __init__(self, batch_size, transform, split=None):
-        self.d = ImageFolder(configs.ImageNet_test_path, transform=transform)
+        self.d = ImageFolder(configs.miniImageNet_path, transform=transform)
         self.split = split
-        if split is not None:
-            print("Using Split")
-            self.d = construct_subset(self.d, split)
+        
+        print("Using Split")
+        self.d = construct_subset(self.d, split)
         self.cl_list = range(len(self.d.classes))
 
         self.sub_dataloader = []
@@ -153,27 +128,6 @@ class DataManager(object):
     @abstractmethod
     def get_data_loader(self, data_file, aug):
         pass
-
-
-class SimpleDataManager(DataManager):
-    def __init__(self, image_size, batch_size, split=None):
-        super(SimpleDataManager, self).__init__()
-        self.batch_size = batch_size
-        self.trans_loader = TransformLoader(image_size)
-        self.split = split
-
-    # parameters that would change on train/val set
-    def get_data_loader(self, aug, num_workers=12):
-        transform = self.trans_loader.get_composed_transform(aug)
-        dataset = SimpleDataset(transform, split=self.split)
-
-        data_loader_params = dict(
-            batch_size=self.batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
-        data_loader = torch.utils.data.DataLoader(
-            dataset, **data_loader_params)
-
-        return data_loader
-
 
 class SetDataManager(DataManager):
     def __init__(self, image_size, n_way=5, n_support=5, n_query=16, n_eposide=100, split=None):

@@ -104,8 +104,8 @@ def get_BN_output(model, colors, layers=None):
     return BN_list, labels, ListedColormap(newcolors, name='custom')
 
 
-def to_grid(path_list):
-    out = "lab/layers/grid.png"
+def to_grid(path_list, out = "lab/layers/grid.png"):
+    
     blank_image = None
     top_left = (0, 0)
     for i in range(0, len(path_list), 2):
@@ -159,36 +159,39 @@ base_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
 EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
-layers = [1] # None is for full network
+
 
 colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
           ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 
-path_list = []
-for i, model in enumerate(models):
-    with torch.no_grad():
-        model(base_x)
-        mini_out, mini_labels, clm = get_BN_output(
-            model, colors=colors[i], layers=layers)
-        
-        model(EuroSAT_x)
-        Euro_out, EuroSAT_labels, clm = get_BN_output(
-            model, colors=colors[i], layers=layers)
-        
-        args = {'overlap': 3, 'bw_method': 0.2,
-                'colormap': clm, 'linewidth': 0.2, 'x_range': [-2, 2], 'linecolor': 'black',
-                'background': 'w',  'alpha': 0.8, 'figsize': (10, 7), 'fill': True,
-                'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+layers = [[i] for i in range(12)]# None is for full network
+for l in layers:
+    path_list = []
+    for i, model in enumerate(models):
+        with torch.no_grad():
+            model(base_x)
+            mini_out, mini_labels, clm = get_BN_output(
+                model, colors=colors[i], layers=l)
+            
+            model(EuroSAT_x)
+            Euro_out, EuroSAT_labels, clm = get_BN_output(
+                model, colors=colors[i], layers=l)
+            
+            args = {'overlap': 4, 'bw_method': 0.2,
+                    'colormap': clm, 'linewidth': 0.3, 'x_range': [-2, 2], 'linecolor': 'w',
+                    'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
+                    'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
 
-        joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
-        # plt.show()
-        path_list.append(
-            "./lab/layers/{0}_to_MiniImageNet.png".format(model_names[i]))
-        plt.savefig(path_list[-1],)
+            joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
+            # plt.show()
+            path_list.append(
+                "./lab/layers/{0}_to_MiniImageNet.png".format(model_names[i]))
+            plt.savefig(path_list[-1],)
 
-        joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
-        # plt.show()
-        path_list.append(
-            "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
-        plt.savefig(path_list[-1],)
-to_grid(path_list)
+            joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
+            # plt.show()
+            path_list.append(
+                "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
+            plt.savefig(path_list[-1],)
+    to_grid(path_list, out = "lab/layers/grid_{}.png".format(l))
+    plt.cla()

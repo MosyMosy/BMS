@@ -1,7 +1,7 @@
 import random
 import math
 import copy
-from datasets import miniImageNet_few_shot, tiered_ImageNet_few_shot, ImageNet_few_shot
+from datasets import miniImageNet_few_shot, tiered_ImageNet_few_shot, ImageNet_few_shot, ImageNet_val_few_shot
 from datasets import ISIC_few_shot, EuroSAT_few_shot, CropDisease_few_shot, Chest_few_shot
 from collections import OrderedDict
 import warnings
@@ -38,7 +38,6 @@ class Classifier(nn.Module):
     def forward(self, x):
         x = self.fc(x)
         return x
-
 
 
 def main(args):
@@ -79,7 +78,8 @@ def main(args):
     ###########################
     print("Loading Model: ", args.embedding_load_path)
     if args.embedding_load_path_version == 0:
-        state = torch.load(args.embedding_load_path, map_location=torch.device(device))['state']
+        state = torch.load(args.embedding_load_path,
+                           map_location=torch.device(device))['state']
         state_keys = list(state.keys())
         for _, key in enumerate(state_keys):
             if "feature." in key:
@@ -96,7 +96,7 @@ def main(args):
         if 'epoch' in sd:
             print("Model checkpointed at epoch: ", sd['epoch'])
         sd = sd['model']
-    
+
     else:
         raise ValueError("Invalid load path version!")
 
@@ -108,7 +108,7 @@ def main(args):
         feature_dim = pretrained_model.output_size
     elif args.model == 'resnet18':
         pretrained_model = models.resnet18(remove_last_relu=False,
-                                                    input_high_res=True)
+                                           input_high_res=True)
         feature_dim = 512
     else:
         raise ValueError("Invalid model!")
@@ -156,21 +156,20 @@ def main(args):
             ])
         else:
             warnings.warn("Using ImageNet with Color Jitter")
-            base_transform = ImageNet_few_shot.TransformLoader(
+            base_transform = ImageNet_val_few_shot.TransformLoader(
                 args.image_size).get_composed_transform(aug=True)
-        base_transform_test = ImageNet_few_shot.TransformLoader(
+        base_transform_test = ImageNet_val_few_shot.TransformLoader(
             args.image_size).get_composed_transform(aug=False)
         base_dataset = datasets.ImageFolder(
-            root=args.base_path, transform=base_transform)
+            root=miniImageNet_path, transform=base_transform)
 
         if args.base_split is not None:
-            base_dataset = ImageNet_few_shot.construct_subset(
+            base_dataset = ImageNet_val_few_shot.construct_subset(
                 base_dataset, args.base_split)
         print("Size of Base dataset:", len(base_dataset))
     else:
         raise ValueError("Invalid base dataset!")
 
-    
     base_dataset_val = copy.deepcopy(base_dataset)
     base_dataset_val.transform = base_transform_test
 
@@ -180,7 +179,6 @@ def main(args):
                                                  num_workers=args.num_workers,
                                                  shuffle=False, drop_last=False)
     ############################
-
 
     performance_val = validate(pretrained_model, clf,
                                base_valloader, vallog, device)
@@ -215,13 +213,13 @@ def validate(model, clf,
     ys_base_all = []
     with torch.no_grad():
         # Compute the loss on the source base dataset
-        for X_base, y_base in base_loader:            
+        for X_base, y_base in base_loader:
             X_base = X_base.to(device)
             y_base = y_base.to(device)
 
             features = model(X_base)
             logits_base = clf(features)
-            
+
             logits_base_all.append(logits_base)
             ys_base_all.append(y_base)
 
@@ -229,7 +227,7 @@ def validate(model, clf,
     logits_base_all = torch.cat(logits_base_all, dim=0)
 
     loss_base = loss_ce(logits_base_all, ys_base_all)
-    loss = loss_base 
+    loss = loss_base
 
     meters.update('CE_Loss_source_test', loss_base.item(), 1)
 
@@ -283,7 +281,7 @@ if __name__ == '__main__':
     parser.add_argument('--print_freq', type=int, default=10,
                         help='Frequency (in step per epoch) to print training stats')
     parser.add_argument('--embedding_load_path', type=str, default=None,
-                        help='Path to the checkpoint to be loaded')    
+                        help='Path to the checkpoint to be loaded')
     parser.add_argument('--embedding_load_path_version', type=int, default=1,
                         help='Path to the checkpoint to be loaded')
     parser.add_argument('--seed', type=int, default=1,
@@ -320,7 +318,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--target_dataset', type=str, default='EuroSAT',
                         help='the target domain dataset')
-    parser.add_argument('--target_subset_split', type=str, 
+    parser.add_argument('--target_subset_split', type=str,
                         help='path to the csv files that specifies the unlabeled split for the target dataset')
     parser.add_argument('--image_size', type=int, default=224,
                         help='Resolution of the input image')

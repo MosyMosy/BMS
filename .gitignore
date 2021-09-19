@@ -128,3 +128,5 @@ dmypy.json
 .pyre/
 
 configs.py
+
+lab/layers/*.png
