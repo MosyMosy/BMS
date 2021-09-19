@@ -159,7 +159,7 @@ base_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
 EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
-layers = [0] # None is for full network
+layers = [1] # None is for full network
 
 colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
           ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
@@ -175,7 +175,7 @@ for i, model in enumerate(models):
         Euro_out, EuroSAT_labels, clm = get_BN_output(
             model, colors=colors[i], layers=layers)
         
-        args = {'overlap': 2, 'bw_method': 0.2,
+        args = {'overlap': 3, 'bw_method': 0.2,
                 'colormap': clm, 'linewidth': 0.2, 'x_range': [-2, 2], 'linecolor': 'black',
                 'background': 'w',  'alpha': 0.8, 'figsize': (10, 7), 'fill': True,
                 'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
