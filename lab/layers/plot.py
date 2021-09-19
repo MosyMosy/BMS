@@ -134,7 +134,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 128
+b_size = 1024
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -164,7 +164,7 @@ base_x, _ = iter(base_loader).next()
 colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
           ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 
-layers = [[i] for i in range(12)]# None is for full network
+layers = [[i] for i in range(9,12)]# None is for full network
 for l in layers:
     path_list = []
     for i, model in enumerate(models):
@@ -194,4 +194,33 @@ for l in layers:
                 "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
             plt.savefig(path_list[-1],)
     to_grid(path_list, out = "lab/layers/grid_{}.png".format(l))
-    plt.cla()
+    
+l = None
+for i, model in enumerate(models):
+        with torch.no_grad():
+            model(base_x)
+            mini_out, mini_labels, clm = get_BN_output(
+                model, colors=colors[i], layers=l)
+            
+            model(EuroSAT_x)
+            Euro_out, EuroSAT_labels, clm = get_BN_output(
+                model, colors=colors[i], layers=l)
+            
+            args = {'overlap': 4, 'bw_method': 0.2,
+                    'colormap': clm, 'linewidth': 0.3, 'x_range': [-2, 2], 'linecolor': 'w',
+                    'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
+                    'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+
+            joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
+            # plt.show()
+            path_list.append(
+                "./lab/layers/{0}_to_MiniImageNet.png".format(model_names[i]))
+            plt.savefig(path_list[-1],)
+
+            joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
+            # plt.show()
+            path_list.append(
+                "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
+            plt.savefig(path_list[-1],)
+        to_grid(path_list, out = "lab/layers/grid_all.png")
+    # plt.cla()
