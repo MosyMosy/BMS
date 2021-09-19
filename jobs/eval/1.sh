@@ -65,8 +65,8 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-python eval.py --dir ./logs/eval/baseline --base_dataset ImageNet_test --base_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/baseline/EuroSAT/checkpoint_best.pkl
-python eval.py --dir ./logs/eval/BMS_Euro --base_dataset ImageNet_test --base_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/vanilla/EuroSAT/checkpoint_best.pkl
+python finetune.py --save_dir ./logs/eval/baseline --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/baseline/EuroSAT/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/eval/BMS_Euro --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/vanilla/EuroSAT/checkpoint_best.pkl --freeze_backbone &
 
 wait
 

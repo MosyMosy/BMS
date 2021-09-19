@@ -31,22 +31,24 @@ def construct_subset(dataset, split):
     u_targets = np.unique(targets)
 
     # create targets
-    targets_id = [np.where(u_targets==t)[0] for t in targets]
+    targets_id = [np.where(u_targets == t)[0] for t in targets]
 
-    image_names = [os.path.join(configs.ImageNet_test_path, im) for im in images]
+    image_names = [os.path.join(configs.ImageNet_test_path, im)
+                   for im in images]
     dataset_subset = copy.deepcopy(dataset)
 
     dataset_subset.samples = [j for j in zip(image_names, targets_id)]
     dataset_subset.imgs = dataset_subset.samples
     dataset_subset.targets = targets_id
-    dataset_subset.classes = targets
+    dataset_subset.classes = u_targets
     return dataset_subset
+
 
 class SetDataset:
     def __init__(self, batch_size, transform, split=None):
         self.d = ImageFolder(configs.miniImageNet_path, transform=transform)
         self.split = split
-        
+
         print("Using Split")
         self.d = construct_subset(self.d, split)
         self.cl_list = range(len(self.d.classes))
@@ -58,6 +60,9 @@ class SetDataset:
                                       pin_memory=False)
         for cl in self.cl_list:
             ind = np.where(np.array(self.d.targets) == cl)[0].tolist()
+            # if len(ind) == 1:
+            # print(self.d)
+            # print(ind)
             sub_dataset = torch.utils.data.Subset(self.d, ind)
             self.sub_dataloader.append(torch.utils.data.DataLoader(
                 sub_dataset, **sub_data_loader_params))
@@ -128,6 +133,7 @@ class DataManager(object):
     @abstractmethod
     def get_data_loader(self, data_file, aug):
         pass
+
 
 class SetDataManager(DataManager):
     def __init__(self, image_size, n_way=5, n_support=5, n_query=16, n_eposide=100, split=None):
