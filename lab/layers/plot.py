@@ -164,7 +164,7 @@ base_x, _ = iter(base_loader).next()
 colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
           ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 
-layers = [[i] for i in range(9,12)]# None is for full network
+layers = [[i] for i in range(12)]# None is for full network
 for l in layers:
     path_list = []
     for i, model in enumerate(models):
