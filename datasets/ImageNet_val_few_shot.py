@@ -155,7 +155,7 @@ class SetDataManager(DataManager):
         data_loader_params = dict(
             batch_sampler=sampler,  num_workers=num_workers, pin_memory=True)
         data_loader = torch.utils.data.DataLoader(
-            dataset, **data_loader_params)
+            dataset, drop_last=True, **data_loader_params)
         return data_loader
 
 
