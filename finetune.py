@@ -135,36 +135,39 @@ def finetune(novel_loader, params, n_shot):
         total_epoch = 100
 
         classifier.train()
+        try:
+            for epoch in range(total_epoch):
+                rand_id = np.random.permutation(support_size)
 
-        for epoch in range(total_epoch):
-            rand_id = np.random.permutation(support_size)
+                for j in range(0, support_size, batch_size):
+                    classifier_opt.zero_grad()
+                    if not params.freeze_backbone:
+                        delta_opt.zero_grad()
 
-            for j in range(0, support_size, batch_size):
-                classifier_opt.zero_grad()
-                if not params.freeze_backbone:
-                    delta_opt.zero_grad()
+                    #####################################
+                    selected_id = torch.from_numpy(
+                        rand_id[j: min(j+batch_size, support_size)]).to(device)
 
-                #####################################
-                selected_id = torch.from_numpy(
-                    rand_id[j: min(j+batch_size, support_size)]).to(device)
+                    y_batch = y_a_i[selected_id.type(torch.long)]
 
-                y_batch = y_a_i[selected_id.type(torch.long)]
+                    if params.freeze_backbone:
+                        output = f_a_i[selected_id.type(torch.long)]
+                    else:
+                        z_batch = x_a_i[selected_id.type(torch.long)]
+                        output = pretrained_model(z_batch)
 
-                if params.freeze_backbone:
-                    output = f_a_i[selected_id.type(torch.long)]
-                else:
-                    z_batch = x_a_i[selected_id.type(torch.long)]
-                    output = pretrained_model(z_batch)
+                    output = classifier(output)
+                    loss = loss_fn(output, y_batch.type(torch.long))
 
-                output = classifier(output)
-                loss = loss_fn(output, y_batch.type(torch.long))
+                    #####################################
+                    loss.backward()
 
-                #####################################
-                loss.backward()
-
-                classifier_opt.step()
-                if not params.freeze_backbone:
-                    delta_opt.step()
+                    classifier_opt.step()
+                    if not params.freeze_backbone:
+                        delta_opt.step()
+        finally:
+            print('error')
+    
 
         pretrained_model.eval()
         classifier.eval()
