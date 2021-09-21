@@ -129,4 +129,4 @@ dmypy.json
 
 configs.py
 
-lab/layers/*.png
+# lab/layers/*.png
