@@ -38,13 +38,14 @@ def construct_subset(dataset, split):
     # # ind
     # ind = np.concatenate(
     #     [np.where(image_names == os.path.join(root, j))[0] for j in split])
-
+    print(os.path.join(root, j))
     image_names = [os.path.join(root, j) for j in split]
     dataset_subset = copy.deepcopy(dataset)
 
     dataset_subset.samples = [j for j in zip(image_names, targets)]
     dataset_subset.imgs = dataset_subset.samples
     dataset_subset.targets = targets
+    print(len(dataset_subset))
     return dataset_subset
 
 class SimpleDataset:
