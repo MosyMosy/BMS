@@ -38,7 +38,7 @@ def construct_subset(dataset, split):
     # # ind
     # ind = np.concatenate(
     #     [np.where(image_names == os.path.join(root, j))[0] for j in split])
-    print(os.path.join(root, j))
+    print(os.path.join(root, split[6]))
     image_names = [os.path.join(root, j) for j in split]
     dataset_subset = copy.deepcopy(dataset)
 
