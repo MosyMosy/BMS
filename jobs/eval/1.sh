@@ -34,6 +34,10 @@ cd BMS
 cd data
 unzip -q $SLURM_TMPDIR/CD-FSL_Datasets/miniImagenet.zip
 tar -xvzf $SLURM_TMPDIR/CD-FSL_Datasets/imagenet_object_localization_patched2019.tar.gz
+cd ILSVRC/Data/CLS-LOC/val
+bash valprep.sh
+cd $SLURM_TMPDIR/BMS/data
+
 
 
 mkdir ChestX-Ray8 EuroSAT ISIC2018 plant-disease
