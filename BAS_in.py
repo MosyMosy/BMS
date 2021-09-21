@@ -227,7 +227,7 @@ def main(args):
     trainset = torch.utils.data.Subset(dataset, train_ind)
     valset = torch.utils.data.Subset(dataset_test, val_ind)
 
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=int(args.bsize/2),
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.bsize,
                                               num_workers=args.num_workers,
                                               shuffle=True, drop_last=True)
     valloader = torch.utils.data.DataLoader(valset, batch_size=args.bsize,
