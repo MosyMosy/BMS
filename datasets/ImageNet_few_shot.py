@@ -38,7 +38,7 @@ def construct_subset(dataset, split):
     # # ind
     # ind = np.concatenate(
     #     [np.where(image_names == os.path.join(root, j))[0] for j in split])
-    print(os.path.join(root, split[6]))
+
     image_names = [os.path.join(root, j) for j in split]
     dataset_subset = copy.deepcopy(dataset)
 
@@ -80,10 +80,14 @@ class SetDataset:
                                   shuffle = True,
                                   num_workers = 0,
                                   pin_memory = False)        
-        for cl in self.cl_list:
-            ind = np.where(np.array(self.d.targets) == cl)[0].tolist()
-            sub_dataset = torch.utils.data.Subset(self.d, ind)
-            self.sub_dataloader.append( torch.utils.data.DataLoader(sub_dataset, **sub_data_loader_params) )
+        for i,cl in enumerate(self.cl_list):
+            try:
+                ind = np.where(np.array(self.d.targets) == cl)[0].tolist()
+                sub_dataset = torch.utils.data.Subset(self.d, ind)
+                self.sub_dataloader.append( torch.utils.data.DataLoader(sub_dataset, **sub_data_loader_params) )
+            finally:
+                print(i)
+                print(ind)
 
 
     def __getitem__(self, i):
