@@ -34,6 +34,7 @@ cd BMS
 cd data
 unzip -q $SLURM_TMPDIR/CD-FSL_Datasets/miniImagenet.zip
 tar -xvzf $SLURM_TMPDIR/CD-FSL_Datasets/imagenet_object_localization_patched2019.tar.gz
+cp $SLURM_TMPDIR/BMS/data/valprep.sh $SLURM_TMPDIR/BMS/data/ILSVRC/Data/CLS-LOC/val
 cd ILSVRC/Data/CLS-LOC/val
 bash valprep.sh
 cd $SLURM_TMPDIR/BMS/data
