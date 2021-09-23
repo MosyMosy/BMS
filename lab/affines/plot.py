@@ -66,13 +66,13 @@ def get_BN_output(model, colors, layers=None):
         if isinstance(layer, nn.BatchNorm2d):
             if (layers is None) or (i in layers):
                 flat_list = []
-                out = layer.weight.tolist()
+                flat_list = layer.weight.tolist()
 
-                for channel in out:
-                    if flatten:
-                        flat_list += channel
-                    else:
-                        flat_list.append(channel)
+                # for channel in out:
+                #     if flatten:
+                #         flat_list += [channel]
+                #     else:
+                #         flat_list.append(channel)
 
                 if flatten:
                     BN_list.append(flat_list)
@@ -180,13 +180,13 @@ for i, model in enumerate(models):
             joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
             # plt.show()
             path_list.append(
-                "./lab/layers/{0}_to_MiniImageNet.png".format(model_names[i]))
+                "./lab/affines/{0}_to_MiniImageNet.png".format(model_names[i]))
             plt.savefig(path_list[-1],)
 
             joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
             # plt.show()
             path_list.append(
-                "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
+                "./lab/affines/{0}_to_EuroSAT.png".format(model_names[i]))
             plt.savefig(path_list[-1],)
-        to_grid(path_list, out = "lab/layers/grid_all.png")
+        to_grid(path_list, out = "lab/affines/grid_all.png")
     # plt.cla()
