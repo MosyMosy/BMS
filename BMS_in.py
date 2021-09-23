@@ -539,20 +539,20 @@ def train(model, clf,
 
         features_base = model(X_base)
         logits_base = clf(features_base)
-
-        source_affine = clone_BN_affine(model)
+        
         source_stat = clone_BN_stat(model)
 
+        shift_model = copy.deepcopy(model)
         #  shift the affine
-        f1 = model(X1)
-        f2 = model(X2)
-        shift_mean(model, source_stat, device)
-
-        shifted_features_base = model(X_base)
+        f1 = shift_model(X1)
+        f2 = shift_model(X2)
+        shift_mean(shift_model, source_stat, device)
+           
+        shifted_features_base = shift_model(X_base)
         shifted_logits_base = clf(shifted_features_base)
 
         # return values to the source
-        regret_affine(model, source_affine)
+        # regret_affine(model, source_affine)
 
         loss_base = loss_ce(logits_base, y_base)
         loss_xtask = mse_criterion(logits_base, shifted_logits_base)
@@ -561,7 +561,7 @@ def train(model, clf,
 
         loss.backward()
         optimizer.step()
-
+        # print(clone_BN_affine(model))
         meters.update('Loss', loss.item(), 1)
         meters.update('MSE_Loss_target', loss_xtask.item(), 1)
         meters.update('CE_Loss_source', loss_base.item(), 1)
@@ -659,19 +659,19 @@ def validate(model, clf,
             features = model(X_base)
             logits_base = clf(features)
 
-            source_affine = clone_BN_affine(model)
             source_stat = clone_BN_stat(model)
 
+            shift_model = copy.deepcopy(model)
             #  shift the affine
-            f1 = model(X1)
-            f2 = model(X2)
-            shift_mean(model, source_stat, device)
-
-            shifted_features_base = model(X_base)
+            f1 = shift_model(X1)
+            f2 = shift_model(X2)
+            shift_mean(shift_model, source_stat, device)
+                
+            shifted_features_base = shift_model(X_base)
             shifted_logits_base = clf(shifted_features_base)
 
             # return values to the source
-            regret_affine(model, source_affine)
+            # regret_affine(model, source_affine)
 
             logits_base_all.append(logits_base)
             shifted_logits_base_all.append(shifted_logits_base)
@@ -784,7 +784,7 @@ def regret_stat(model, source_stat):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='STARTUP')
-    parser.add_argument('--dir', type=str, default='./logs/vanilla/EuroSAT',
+    parser.add_argument('--dir', type=str, default='./logs/BMS_in/EuroSAT',
                         help='directory to save the checkpoints')
 
     parser.add_argument('--bsize', type=int, default=32,
