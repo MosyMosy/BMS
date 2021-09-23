@@ -8,11 +8,13 @@ import torch
 import torch.nn as nn
 from datasets import (Chest_few_shot, CropDisease_few_shot, EuroSAT_few_shot,
                       ISIC_few_shot, miniImageNet_few_shot)
-from lab.layers.resnet10 import ResNet10
+from models.resnet10 import ResNet10
 from matplotlib import cm
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from scipy.stats.stats import mode
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 from PIL import Image
 
@@ -40,7 +42,6 @@ def load_checkpoint(model, load_path, device):
     model.eval()
     return model
 
-
 def load_checkpoint2(model, load_path, device):
     '''
     Load model and optimizer from load path 
@@ -52,7 +53,7 @@ def load_checkpoint2(model, load_path, device):
     return model
 
 
-def get_BN_output(model, colors, layers=None):
+def get_BN_output(model, colors, layers=None, param = 'weight'):
     newcolors = []
     labels = []
     BN_list = []
@@ -66,7 +67,10 @@ def get_BN_output(model, colors, layers=None):
         if isinstance(layer, nn.BatchNorm2d):
             if (layers is None) or (i in layers):
                 flat_list = []
-                flat_list = layer.weight.tolist()
+                if param == 'weight':
+                    flat_list = layer.weight.tolist()
+                else:
+                    flat_list = layer.bias.tolist()
 
                 # for channel in out:
                 #     if flatten:
@@ -115,7 +119,6 @@ def to_grid(path_list, out = "lab/layers/grid.png"):
         top_left = (0, top_left[1] + right.height)
     blank_image.save(out)
 
-
 device = torch.device("cpu")
 
 model_names = ['Baseline', 'BMS_Eurosat', 'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
@@ -129,64 +132,35 @@ models.append(load_checkpoint2(
 models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
-
-b_size = 32
-transform = EuroSAT_few_shot.TransformLoader(
-    224).get_composed_transform(aug=True)
-transform_test = EuroSAT_few_shot.TransformLoader(
-    224).get_composed_transform(aug=False)
-split = 'datasets/split_seed_1/EuroSAT_unlabeled_20.csv'
-dataset = EuroSAT_few_shot.SimpleDataset(
-    transform, split=split)
-EuroSAT_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
-                                             num_workers=0,
-                                             shuffle=True, drop_last=True)
-
-transform = miniImageNet_few_shot.TransformLoader(
-    224).get_composed_transform(aug=True)
-transform_test = miniImageNet_few_shot.TransformLoader(
-    224).get_composed_transform(aug=False)
-dataset = miniImageNet_few_shot.SimpleDataset(
-    transform, split=None)
-base_loader = torch.utils.data.DataLoader(dataset, batch_size=b_size,
-                                          num_workers=0,
-                                          shuffle=True, drop_last=True)
-
-EuroSAT_x, _ = iter(EuroSAT_loader).next()
-base_x, _ = iter(base_loader).next()
-
-
-
 colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
           ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
+
 
 l = None
 path_list = []
 for i, model in enumerate(models):
         with torch.no_grad():
-            model(base_x)
-            mini_out, mini_labels, clm = get_BN_output(
-                model, colors=colors[i], layers=l)
+            weight_out, weight_labels, clm = get_BN_output(
+                model, colors=colors[i], layers=l, param='weight')
             
-            model(EuroSAT_x)
-            Euro_out, EuroSAT_labels, clm = get_BN_output(
-                model, colors=colors[i], layers=l)
+            bias_out, bias_labels, clm = get_BN_output(
+                model, colors=colors[i], layers=l, param = 'bias')
             
             args = {'overlap': 4, 'bw_method': 0.2,
-                    'colormap': clm, 'linewidth': 0.3, 'x_range': [-2, 2], 'linecolor': 'w',
+                    'colormap': clm, 'linewidth': 0.3, 'linecolor': 'w',
                     'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
-                    'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+                    'grid': False, 'kind': 'kde', 'hist': False}
 
-            joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
+            joypy.joyplot(list(reversed(weight_out)), labels= list(reversed(weight_labels)), **args)
             # plt.show()
             path_list.append(
-                "./lab/affines/{0}_to_MiniImageNet.png".format(model_names[i]))
+                "./lab/affines/weight_{0}.png".format(model_names[i]))
             plt.savefig(path_list[-1],)
 
-            joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
+            joypy.joyplot(list(reversed(bias_out)), labels= list(reversed(bias_labels)), **args)
             # plt.show()
             path_list.append(
-                "./lab/affines/{0}_to_EuroSAT.png".format(model_names[i]))
+                "./lab/affines/bias_{0}.png".format(model_names[i]))
             plt.savefig(path_list[-1],)
-        to_grid(path_list, out = "lab/affines/grid_all.png")
+        to_grid(path_list, out = "lab/affines/grid_affine_all.png")
     # plt.cla()
