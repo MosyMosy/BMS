@@ -521,7 +521,7 @@ def train(model, clf,
         current_lr = optimizer.param_groups[0]['lr']
         meters.update('lr', current_lr, 1)
 
-        # Get the data from the base dataset
+        # Get the data from the target dataset
         try:
             (X1, X2), y = loader_iter.next()
         except StopIteration:
