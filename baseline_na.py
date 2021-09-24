@@ -2,7 +2,6 @@ import random
 import math
 import copy
 from datasets import miniImageNet_few_shot, tiered_ImageNet_few_shot, ImageNet_few_shot
-from datasets import ISIC_few_shot, EuroSAT_few_shot, CropDisease_few_shot, Chest_few_shot
 from collections import OrderedDict
 import warnings
 import models
@@ -25,27 +24,6 @@ torch.cuda.empty_cache()
 
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-
-
-# import wandb
-
-
-class apply_twice:
-    '''
-        A wrapper for torchvision transform. The transform is applied twice for 
-        SimCLR training
-    '''
-
-    def __init__(self, transform, transform2=None):
-        self.transform = transform
-
-        if transform2 is not None:
-            self.transform2 = transform2
-        else:
-            self.transform2 = transform
-
-    def __call__(self, img):
-        return self.transform(img), self.transform2(img)
 
 
 def main(args):
@@ -156,83 +134,9 @@ def main(args):
     else:
         raise ValueError("Invalid base dataset!")
 
-    # create the target dataset
-    if args.target_dataset == 'ISIC':
-        transform = ISIC_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=True)
-        transform_test = ISIC_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=False)
-        dataset = ISIC_few_shot.SimpleDataset(
-            transform, split=args.target_subset_split)
-    elif args.target_dataset == 'EuroSAT':
-        transform = EuroSAT_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=True)
-        transform_test = EuroSAT_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=False)
-        dataset = EuroSAT_few_shot.SimpleDataset(
-            transform, split=args.target_subset_split)
-    elif args.target_dataset == 'CropDisease':
-        transform = CropDisease_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=True)
-        transform_test = CropDisease_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=False)
-        dataset = CropDisease_few_shot.SimpleDataset(
-            transform, split=args.target_subset_split)
-    elif args.target_dataset == 'ChestX':
-        transform = Chest_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=True)
-        transform_test = Chest_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=False)
-        dataset = Chest_few_shot.SimpleDataset(
-            transform, split=args.target_subset_split)
-    elif args.target_dataset == 'miniImageNet_test':
-        transform = miniImageNet_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=True)
-        transform_test = miniImageNet_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=False)
-        dataset = miniImageNet_few_shot.SimpleDataset(
-            transform, split=args.target_subset_split)
-    elif args.target_dataset == 'tiered_ImageNet_test':
-        if args.image_size != 84:
-            warnings.warn("Tiered ImageNet: The image size for is not 84x84")
-        transform = tiered_ImageNet_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=True)
-        transform_test = tiered_ImageNet_few_shot.TransformLoader(
-            args.image_size).get_composed_transform(aug=False)
-        dataset = tiered_ImageNet_few_shot.SimpleDataset(
-            transform, split=args.target_subset_split)
-    else:
-        raise ValueError('Invalid dataset!')
-
-    print("Size of target dataset", len(dataset))
-    dataset_test = copy.deepcopy(dataset)
-
-    transform_twice = apply_twice(transform)
-    transform_test_twice = apply_twice(transform_test, transform)
-
-    dataset.d.transform = transform_twice
-    dataset_test.d.transform = transform_test_twice
-
-    ind = torch.randperm(len(dataset))
-
     # initialize the student's backbone with random weights
     if args.backbone_random_init:
         backbone.module.load_state_dict(backbone_sd_init)
-
-    # split the target dataset into train and val
-    # 10% of the unlabeled data is used for validation
-    train_ind = ind[:int(0.9*len(ind))]
-    val_ind = ind[int(0.9*len(ind)):]
-
-    trainset = torch.utils.data.Subset(dataset, train_ind)
-    valset = torch.utils.data.Subset(dataset_test, val_ind)
-
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.bsize,
-                                              num_workers=args.num_workers,
-                                              shuffle=True, drop_last=True)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=args.bsize,
-                                            num_workers=args.num_workers,
-                                            shuffle=False, drop_last=False)
 
     # Generate trainset and valset for base dataset
     base_ind = torch.randperm(len(base_dataset))
@@ -379,12 +283,12 @@ def main(args):
             # training for a bit
             for i in range(warm_up_epoch):
                 perf = train(backbone, clf, optimizer,
-                             trainloader, base_trainloader,
+                             base_trainloader,
                              i, warm_up_epoch, logger, lr_log, args, device, turn_off_sync=True)
 
             # compute the validation loss for picking learning rates
             perf_val = validate(backbone, clf,
-                                base_valloader, valloader,
+                                base_valloader,
                                 1, 1, logger, vallog, args, device, postfix='Validation',
                                 turn_off_sync=True)
             vals.append(perf_val['Loss_test/avg'])
@@ -429,7 +333,7 @@ def main(args):
 
     try:
         for epoch in tqdm(range(starting_epoch, args.epochs)):
-            perf = train(backbone, clf, optimizer, trainloader,
+            perf = train(backbone, clf, optimizer,
                          base_trainloader,
                          epoch, args.epochs, logger, trainlog, args, device)
 
@@ -444,7 +348,7 @@ def main(args):
 
             if (epoch == starting_epoch) or ((epoch + 1) % args.eval_freq == 0):
                 performance_val = validate(backbone, clf,
-                                           base_valloader, valloader,
+                                           base_valloader,
                                            epoch+1, args.epochs, logger, vallog, args, device, postfix='Validation')
 
                 loss_val = performance_val['Loss_test/avg']
@@ -500,7 +404,7 @@ def load_checkpoint(model, clf, optimizer, scheduler, load_path, device):
 
 
 def train(model, clf,
-          optimizer, trainloader, base_trainloader, epoch,
+          optimizer, base_trainloader, epoch,
           num_epochs, logger, trainlog, args, device, turn_off_sync=False):
 
     meters = utils.AverageMeterSet()
@@ -511,26 +415,13 @@ def train(model, clf,
     mse_criterion = nn.MSELoss()
     loss_ce = nn.CrossEntropyLoss()
 
-    loader_iter = iter(trainloader)
-
     end = time.time()
     for i, (X_base, y_base) in enumerate(base_trainloader):
-        
+
         meters.update('Data_time', time.time() - end)
 
         current_lr = optimizer.param_groups[0]['lr']
         meters.update('lr', current_lr, 1)
-
-        # Get the data from the base dataset
-        try:
-            (X1, X2), y = loader_iter.next()
-        except StopIteration:
-            loader_iter = iter(trainloader)
-            (X1, X2), y = loader_iter.next()
-
-        X1 = X1.to(device)
-        X2 = X2.to(device)
-        y = y.to(device)
 
         X_base = X_base.to(device)
         y_base = y_base.to(device)
@@ -539,31 +430,15 @@ def train(model, clf,
 
         features_base = model(X_base)
         logits_base = clf(features_base)
-        
-        source_stat = clone_BN_stat(model)
-
-        shift_model = copy.deepcopy(model)
-        #  shift the affine
-        shift_model(X1)
-        shift_model(X2)
-        shift_bias(shift_model, source_stat, device)
-           
-        shifted_features_base = shift_model(X_base)
-        shifted_logits_base = clf(shifted_features_base)
-
-        # return values to the source
-        # regret_affine(model, source_affine)
 
         loss_base = loss_ce(logits_base, y_base)
-        loss_xtask = mse_criterion(logits_base, shifted_logits_base)
 
-        loss = loss_base + loss_xtask
+        loss = loss_base
 
         loss.backward()
         optimizer.step()
-        # print(clone_BN_affine(model))
+
         meters.update('Loss', loss.item(), 1)
-        meters.update('MSE_Loss_target', loss_xtask.item(), 1)
         meters.update('CE_Loss_source', loss_base.item(), 1)
 
         perf_base = utils.accuracy(logits_base.data,
@@ -583,7 +458,6 @@ def train(model, clf,
             logger_string = ('Training Epoch: [{epoch}/{epochs}] Step: [{step} / {steps}] '
                              'Batch Time: {meters[Batch_time]:.4f} '
                              'Data Time: {meters[Data_time]:.4f} Average Loss: {meters[Loss]:.4f} '
-                             'Average MSE Loss (Target): {meters[MSE_Loss_target]:.4f} '
                              'Average CE Loss (Source): {meters[CE_Loss_source]: .4f} '
                              'Learning Rate: {meters[lr]:.4f} '
                              'Top1_base: {meters[top1_base]:.4f} '
@@ -599,7 +473,6 @@ def train(model, clf,
 
     logger_string = ('Training Epoch: [{epoch}/{epochs}] Step: [{step}] Batch Time: {meters[Batch_time]:.4f} '
                      'Data Time: {meters[Data_time]:.4f} Average Loss: {meters[Loss]:.4f} '
-                     'Average MSE Loss (Target): {meters[MSE_Loss_target]:.4f} '
                      'Average CE Loss (Source): {meters[CE_Loss_source]: .4f} '
                      'Learning Rate: {meters[lr]:.4f} '
                      'Top1_base: {meters[top1_base]:.4f} '
@@ -624,7 +497,7 @@ def train(model, clf,
 
 
 def validate(model, clf,
-             base_loader, testloader, epoch, num_epochs, logger,
+             base_loader, epoch, num_epochs, logger,
              testlog, args, device, postfix='Validation', turn_off_sync=False):
     meters = utils.AverageMeterSet()
     model.to(device)
@@ -637,58 +510,28 @@ def validate(model, clf,
     end = time.time()
 
     logits_base_all = []
-    shifted_logits_base_all = []
     ys_base_all = []
     with torch.no_grad():
         # Compute the loss on the source base dataset
         for X_base, y_base in base_loader:
-            loader_iter = iter(testloader)
-            try:
-                (X1, X2), y = loader_iter.next()
-            except StopIteration:
-                loader_iter = iter(testloader)
-                (X1, X2), y = loader_iter.next()
-
-            X1 = X1.to(device)
-            X2 = X2.to(device)
-            y = y.to(device)
-
             X_base = X_base.to(device)
             y_base = y_base.to(device)
 
             features = model(X_base)
             logits_base = clf(features)
 
-            source_stat = clone_BN_stat(model)
-
-            shift_model = copy.deepcopy(model)
-            #  shift the affine
-            f1 = shift_model(X1)
-            f2 = shift_model(X2)
-            shift_bias(shift_model, source_stat, device)
-                
-            shifted_features_base = shift_model(X_base)
-            shifted_logits_base = clf(shifted_features_base)
-
-            # return values to the source
-            # regret_affine(model, source_affine)
-
             logits_base_all.append(logits_base)
-            shifted_logits_base_all.append(shifted_logits_base)
             ys_base_all.append(y_base)
-            
+
     ys_base_all = torch.cat(ys_base_all, dim=0)
     logits_base_all = torch.cat(logits_base_all, dim=0)
-    shifted_logits_base_all =  torch.cat(shifted_logits_base_all, dim=0)
 
     loss_base = loss_ce(logits_base_all, ys_base_all)
-    loss_xtask = mse_criterion(shifted_logits_base_all, logits_base_all)
 
-    loss = loss_base + loss_xtask
+    loss = loss_base
 
     meters.update('CE_Loss_source_test', loss_base.item(), 1)
     meters.update('Loss_test', loss.item(), 1)
-    meters.update('MSE_Loss_target', loss_xtask.item(), 1)
 
     perf_base = utils.accuracy(logits_base_all.data,
                                ys_base_all.data, topk=(1, ))
@@ -702,7 +545,6 @@ def validate(model, clf,
     logger_string = ('{postfix} Epoch: [{epoch}/{epochs}]  Batch Time: {meters[Batch_time]:.4f} '
                      'Average Test Loss: {meters[Loss_test]:.4f} '
                      'Average CE Loss (Source): {meters[CE_Loss_source_test]: .4f} '
-                     'Average MSE Loss (Target): {meters[MSE_Loss_target]:.4f} '
                      'Top1_base_test: {meters[top1_base_test]:.4f} '
                      'Top1_base_test_per_class: {meters[top1_base_test_per_class]:.4f} ').format(
         postfix=postfix, epoch=epoch, epochs=num_epochs, meters=meters)
@@ -725,66 +567,10 @@ def validate(model, clf,
     return averages
 
 
-def shift_bias(model, source_stat, device):
-    total_shift = 0
-    i = 0
-    for layer in model.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            target_mean = layer.running_mean.clone()  # source state
-            source_mean = source_stat[i]['means']
-            source_var = source_stat[i]['vars']
-            shift_value = (target_mean - source_mean)
-            total_shift += torch.sum(shift_value)
-            # shift bias
-            layer.bias = nn.Parameter(layer.bias + ((torch.rand(len(source_mean)).to(
-                device) * shift_value.to(device)).to(
-                    device) * layer.weight / source_var)).to(device)
-            i += 1
-    return total_shift
-
-
-def clone_BN_affine(model):
-    BN_statistics_list = []
-    for layer in model.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            BN_statistics_list.append(
-                {'weight': layer.weight.clone(),
-                 'bias': layer.bias.clone()})
-    return BN_statistics_list
-
-
-def clone_BN_stat(model):
-    BN_statistics_list = []
-    for layer in model.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            BN_statistics_list.append(
-                {'means': layer.running_mean.clone(),
-                    'vars': layer.running_var.clone()})
-    return BN_statistics_list
-
-
-# def regret_affine(model, source_affine):
-#     i = 0
-#     for layer in model.modules():
-#         if isinstance(layer, nn.BatchNorm2d):
-#             layer.bias = nn.Parameter(source_affine[i]['bias'])
-#             layer.weight = nn.Parameter(source_affine[i]['weight'])
-#             i += 1
-
-
-# def regret_stat(model, source_stat):
-#     i = 0
-#     for layer in model.modules():
-#         if isinstance(layer, nn.BatchNorm2d):
-#             layer.running_mean = nn.Parameter(source_stat[i]['means'])
-#             layer.running_var = nn.Parameter(source_stat[i]['vars'])
-#             i += 1
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='STARTUP')
-    parser.add_argument('--dir', type=str, default='./logs/BMS_in/EuroSAT',
+    parser.add_argument('--dir', type=str, default='./logs/baseline_na/',
                         help='directory to save the checkpoints')
 
     parser.add_argument('--bsize', type=int, default=32,
@@ -831,10 +617,6 @@ if __name__ == '__main__':
                         help='to do batch validate rather than validate on the full dataset (Ideally, for SimCLR,' +
                         ' the validation should be on the full dataset but might not be feasible due to hardware constraints')
 
-    parser.add_argument('--target_dataset', type=str, default='EuroSAT',
-                        help='the target domain dataset')
-    parser.add_argument('--target_subset_split', type=str, default='datasets/split_seed_1/EuroSAT_unlabeled_20.csv',
-                        help='path to the csv files that specifies the unlabeled split for the target dataset')
     parser.add_argument('--image_size', type=int, default=224,
                         help='Resolution of the input image')
 

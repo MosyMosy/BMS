@@ -561,7 +561,7 @@ def train(model, clf,
 
         loss.backward()
         optimizer.step()
-
+        print(clone_BN_affine(model))
         meters.update('Loss', loss.item(), 1)
         meters.update('MSE_Loss_target', loss_xtask.item(), 1)
         meters.update('CE_Loss_source', loss_base.item(), 1)
@@ -772,22 +772,22 @@ def clone_BN_stat(model):
     return BN_statistics_list
 
 
-def regret_affine(model, source_affine):
-    i = 0
-    for layer in model.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            layer.bias = nn.Parameter(source_affine[i]['bias'])
-            layer.weight = nn.Parameter(source_affine[i]['weight'])
-            i += 1
+# def regret_affine(model, source_affine):
+#     i = 0
+#     for layer in model.modules():
+#         if isinstance(layer, nn.BatchNorm2d):
+#             layer.bias = nn.Parameter(source_affine[i]['bias'])
+#             layer.weight = nn.Parameter(source_affine[i]['weight'])
+#             i += 1
 
 
-def regret_stat(model, source_stat):
-    i = 0
-    for layer in model.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            layer.running_mean = nn.Parameter(source_stat[i]['means'])
-            layer.running_var = nn.Parameter(source_stat[i]['vars'])
-            i += 1
+# def regret_stat(model, source_stat):
+#     i = 0
+#     for layer in model.modules():
+#         if isinstance(layer, nn.BatchNorm2d):
+#             layer.running_mean = nn.Parameter(source_stat[i]['means'])
+#             layer.running_var = nn.Parameter(source_stat[i]['vars'])
+#             i += 1
 
 
 if __name__ == '__main__':
