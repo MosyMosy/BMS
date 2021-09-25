@@ -53,4 +53,5 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/baseline_na/ ~/scratch/BMS/logs/
+cp -r $SLURM_TMPDIR/BMS/logs/baseline/ ~/scratch/BMS/logs/
+
