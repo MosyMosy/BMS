@@ -270,10 +270,14 @@ def main(args):
             clf.load_state_dict(sd_head)
 
             # create the optimizer
+            for layer in backbone.modules():
+                if isinstance(layer, nn.BatchNorm2d):
+                    layer.bias.requires_grad = False
+                    layer.weight.requires_grad = False
             optimizer = torch.optim.SGD([
-                {'params': backbone.parameters()},
+                {'params': filter(lambda p: p.requires_grad, backbone.parameters())},
                 {'params': clf.parameters()}
-            ],
+            ],            
                 lr=current_lr, momentum=0.9,
                 weight_decay=args.wd,
                 nesterov=False)
