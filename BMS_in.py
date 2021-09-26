@@ -733,7 +733,7 @@ def shift_bias(model, source_stat, device):
             target_mean = layer.running_mean.clone()  # source state
             source_mean = source_stat[i]['means']
             source_var = source_stat[i]['vars']
-            shift_value = (target_mean - source_mean)
+            shift_value = (source_mean- target_mean)
             total_shift += torch.sum(shift_value)
             # shift bias
             layer.bias = nn.Parameter(layer.bias + ((torch.rand(len(source_mean)).to(
