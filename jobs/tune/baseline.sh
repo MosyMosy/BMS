@@ -63,10 +63,10 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-python finetune.py --save_dir ./logs/baseline/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/baseline/EuroSAT/checkpoint_best.pkl --freeze_backbone
-python finetune.py --save_dir ./logs/baseline/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/baseline/CropDisease/checkpoint_best.pkl --freeze_backbone
-python finetune.py --save_dir ./logs/baseline/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/baseline/ISIC/checkpoint_best.pkl --freeze_backbone
-python finetune.py --save_dir ./logs/baseline/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/baseline/ChestX/checkpoint_best.pkl --freeze_backbone
+python finetune.py --save_dir ./logs/baseline --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/baseline/checkpoint_best.pkl --freeze_backbone
+python finetune.py --save_dir ./logs/baseline --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/baseline/checkpoint_best.pkl --freeze_backbone
+python finetune.py --save_dir ./logs/baseline --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/baseline/checkpoint_best.pkl --freeze_backbone
+python finetune.py --save_dir ./logs/baseline --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/baseline/checkpoint_best.pkl --freeze_backbone
 
 wait
 
