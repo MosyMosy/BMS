@@ -80,16 +80,22 @@ def compare_baselines():
     df = pd.DataFrame()
     df['baseline_train_loss'] = df_baseline_train['Loss']
     df['baseline_na_train_loss'] = df_baseline_na_train['Loss']
-    df.plot( y=["baseline_train_loss", 'baseline_na_train_loss'], xlim=[0,460])
+    df.plot( y=["baseline_train_loss", 'baseline_na_train_loss'])
+    plt.axvline(x=354, color='blue')
+    plt.axvline(x=332, color='orange')
     
     df['baseline_val_loss'] = df_baseline_val['Loss_test']
     df['baseline_na_val_loss'] = df_baseline_na_val['Loss_test']
-    df.plot( y=["baseline_val_loss", 'baseline_na_val_loss'], xlim=[0,460])
+    df.plot( y=["baseline_val_loss", 'baseline_na_val_loss'])
+    plt.axvline(x=354, color='blue')
+    plt.axvline(x=332, color='orange')
     
     df['baseline_val_top1'] = df_baseline_val['top1_base_test']
     df['baseline_na_val_top1'] = df_baseline_na_val['top1_base_test']
-    df.plot( y=["baseline_val_top1", 'baseline_na_val_top1'], xlim=[0,460])
-  
+    df.plot( y=["baseline_val_top1", 'baseline_na_val_top1'])
+    plt.axvline(x=354, color='blue')
+    plt.axvline(x=332, color='orange')
+    
     plt.show()
     
 # plot_all()
