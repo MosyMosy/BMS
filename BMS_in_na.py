@@ -260,8 +260,12 @@ def main(args):
     # Create Optimizer
     ###########################
 
+    for layer in backbone.modules():
+        if isinstance(layer, nn.BatchNorm2d):
+            layer.bias.requires_grad = False
+            layer.weight.requires_grad = False
     optimizer = torch.optim.SGD([
-        {'params': backbone.parameters()},
+        {'params': filter(lambda p: p.requires_grad, backbone.parameters())},
         {'params': clf.parameters()}
     ],
         lr=0.1, momentum=0.9,
@@ -366,8 +370,13 @@ def main(args):
             clf.load_state_dict(sd_head)
 
             # create the optimizer
+            for layer in backbone.modules():
+                if isinstance(layer, nn.BatchNorm2d):
+                    layer.bias.requires_grad = False
+                    layer.weight.requires_grad = False
             optimizer = torch.optim.SGD([
-                {'params': backbone.parameters()},
+                {'params': filter(lambda p: p.requires_grad,
+                                  backbone.parameters())},
                 {'params': clf.parameters()}
             ],
                 lr=current_lr, momentum=0.9,
@@ -397,8 +406,13 @@ def main(args):
         clf.load_state_dict(sd_head)
 
         logger.info(f"** Learning with lr: {current_lr}")
+        for layer in backbone.modules():
+            if isinstance(layer, nn.BatchNorm2d):
+                layer.bias.requires_grad = False
+                layer.weight.requires_grad = False
         optimizer = torch.optim.SGD([
-            {'params': backbone.parameters()},
+            {'params': filter(lambda p: p.requires_grad,
+                              backbone.parameters())},
             {'params': clf.parameters()}
         ],
             lr=current_lr, momentum=0.9,
@@ -515,13 +529,13 @@ def train(model, clf,
 
     end = time.time()
     for i, (X_base, y_base) in enumerate(base_trainloader):
-        
+
         meters.update('Data_time', time.time() - end)
 
         current_lr = optimizer.param_groups[0]['lr']
         meters.update('lr', current_lr, 1)
 
-        # Get the data from the base dataset
+        # Get the data from the target dataset
         try:
             (X1, X2), y = loader_iter.next()
         except StopIteration:
@@ -540,19 +554,19 @@ def train(model, clf,
         features_base = model(X_base)
         logits_base = clf(features_base)
 
-        source_affine = clone_BN_affine(model)
         source_stat = clone_BN_stat(model)
 
+        shift_model = copy.deepcopy(model)
         #  shift the affine
-        f1 = model(X1)
-        f2 = model(X2)
-        shift_mean(model, source_stat, device)
+        shift_model(X1)
+        shift_model(X2)
+        shift_bias(shift_model, source_stat, device)
 
-        shifted_features_base = model(X_base)
+        shifted_features_base = shift_model(X_base)
         shifted_logits_base = clf(shifted_features_base)
 
         # return values to the source
-        regret_affine(model, source_affine)
+        # regret_affine(model, source_affine)
 
         loss_base = loss_ce(logits_base, y_base)
         loss_xtask = mse_criterion(logits_base, shifted_logits_base)
@@ -561,7 +575,7 @@ def train(model, clf,
 
         loss.backward()
         optimizer.step()
-
+        # print(clone_BN_affine(model))
         meters.update('Loss', loss.item(), 1)
         meters.update('MSE_Loss_target', loss_xtask.item(), 1)
         meters.update('CE_Loss_source', loss_base.item(), 1)
@@ -659,27 +673,27 @@ def validate(model, clf,
             features = model(X_base)
             logits_base = clf(features)
 
-            source_affine = clone_BN_affine(model)
             source_stat = clone_BN_stat(model)
 
+            shift_model = copy.deepcopy(model)
             #  shift the affine
-            f1 = model(X1)
-            f2 = model(X2)
-            shift_mean(model, source_stat, device)
+            f1 = shift_model(X1)
+            f2 = shift_model(X2)
+            shift_bias(shift_model, source_stat, device)
 
-            shifted_features_base = model(X_base)
+            shifted_features_base = shift_model(X_base)
             shifted_logits_base = clf(shifted_features_base)
 
             # return values to the source
-            regret_affine(model, source_affine)
+            # regret_affine(model, source_affine)
 
             logits_base_all.append(logits_base)
             shifted_logits_base_all.append(shifted_logits_base)
             ys_base_all.append(y_base)
-            
+
     ys_base_all = torch.cat(ys_base_all, dim=0)
     logits_base_all = torch.cat(logits_base_all, dim=0)
-    shifted_logits_base_all =  torch.cat(shifted_logits_base_all, dim=0)
+    shifted_logits_base_all = torch.cat(shifted_logits_base_all, dim=0)
 
     loss_base = loss_ce(logits_base_all, ys_base_all)
     loss_xtask = mse_criterion(shifted_logits_base_all, logits_base_all)
@@ -725,7 +739,7 @@ def validate(model, clf,
     return averages
 
 
-def shift_mean(model, source_stat, device):
+def shift_bias(model, source_stat, device):
     total_shift = 0
     i = 0
     for layer in model.modules():
@@ -763,22 +777,22 @@ def clone_BN_stat(model):
     return BN_statistics_list
 
 
-def regret_affine(model, source_affine):
-    i = 0
-    for layer in model.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            layer.bias = nn.Parameter(source_affine[i]['bias'])
-            layer.weight = nn.Parameter(source_affine[i]['weight'])
-            i += 1
+# def regret_affine(model, source_affine):
+#     i = 0
+#     for layer in model.modules():
+#         if isinstance(layer, nn.BatchNorm2d):
+#             layer.bias = nn.Parameter(source_affine[i]['bias'])
+#             layer.weight = nn.Parameter(source_affine[i]['weight'])
+#             i += 1
 
 
-def regret_stat(model, source_stat):
-    i = 0
-    for layer in model.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            layer.running_mean = nn.Parameter(source_stat[i]['means'])
-            layer.running_var = nn.Parameter(source_stat[i]['vars'])
-            i += 1
+# def regret_stat(model, source_stat):
+#     i = 0
+#     for layer in model.modules():
+#         if isinstance(layer, nn.BatchNorm2d):
+#             layer.running_mean = nn.Parameter(source_stat[i]['means'])
+#             layer.running_var = nn.Parameter(source_stat[i]['vars'])
+#             i += 1
 
 
 if __name__ == '__main__':
