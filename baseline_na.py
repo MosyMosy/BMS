@@ -164,8 +164,12 @@ def main(args):
     # Create Optimizer
     ###########################
 
+    for layer in backbone.modules():
+            if isinstance(layer, nn.BatchNorm2d):
+                layer.bias.requires_grad = False
+                layer.weight.requires_grad = False
     optimizer = torch.optim.SGD([
-        {'params': backbone.parameters()},
+        {'params': filter(lambda p: p.requires_grad, backbone.parameters())},
         {'params': clf.parameters()}
     ],
         lr=0.1, momentum=0.9,
@@ -220,7 +224,7 @@ def main(args):
 
                 # Validate to set the right loss
                 performance_val = validate(backbone, clf,
-                                           base_valloader, valloader,
+                                           base_valloader,
                                            best_epoch, args.epochs, logger, vallog, args, device, postfix='Validation')
 
                 loss_val = performance_val['Loss_test/avg']

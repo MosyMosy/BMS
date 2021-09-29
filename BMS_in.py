@@ -515,7 +515,7 @@ def train(model, clf,
 
     end = time.time()
     for i, (X_base, y_base) in enumerate(base_trainloader):
-        
+
         meters.update('Data_time', time.time() - end)
 
         current_lr = optimizer.param_groups[0]['lr']
@@ -539,7 +539,7 @@ def train(model, clf,
 
         features_base = model(X_base)
         logits_base = clf(features_base)
-        
+
         source_stat = clone_BN_stat(model)
 
         shift_model = copy.deepcopy(model)
@@ -547,7 +547,7 @@ def train(model, clf,
         shift_model(X1)
         shift_model(X2)
         shift_bias(shift_model, source_stat, device)
-           
+
         shifted_features_base = shift_model(X_base)
         shifted_logits_base = clf(shifted_features_base)
 
@@ -666,7 +666,7 @@ def validate(model, clf,
             f1 = shift_model(X1)
             f2 = shift_model(X2)
             shift_bias(shift_model, source_stat, device)
-                
+
             shifted_features_base = shift_model(X_base)
             shifted_logits_base = clf(shifted_features_base)
 
@@ -676,10 +676,10 @@ def validate(model, clf,
             logits_base_all.append(logits_base)
             shifted_logits_base_all.append(shifted_logits_base)
             ys_base_all.append(y_base)
-            
+
     ys_base_all = torch.cat(ys_base_all, dim=0)
     logits_base_all = torch.cat(logits_base_all, dim=0)
-    shifted_logits_base_all =  torch.cat(shifted_logits_base_all, dim=0)
+    shifted_logits_base_all = torch.cat(shifted_logits_base_all, dim=0)
 
     loss_base = loss_ce(logits_base_all, ys_base_all)
     loss_xtask = mse_criterion(shifted_logits_base_all, logits_base_all)
@@ -733,7 +733,7 @@ def shift_bias(model, source_stat, device):
             target_mean = layer.running_mean.clone()  # source state
             source_mean = source_stat[i]['means']
             source_var = source_stat[i]['vars']
-            shift_value = (target_mean - source_mean)
+            shift_value = (source_mean - target_mean)
             total_shift += torch.sum(shift_value)
             # shift bias
             layer.bias = nn.Parameter(layer.bias + ((torch.rand(len(source_mean)).to(
