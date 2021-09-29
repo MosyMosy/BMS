@@ -281,7 +281,7 @@ def main(args):
             optimizer = torch.optim.SGD([
                 {'params': filter(lambda p: p.requires_grad, backbone.parameters())},
                 {'params': clf.parameters()}
-            ],
+            ],            
                 lr=current_lr, momentum=0.9,
                 weight_decay=args.wd,
                 nesterov=False)
