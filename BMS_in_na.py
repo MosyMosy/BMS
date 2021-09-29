@@ -1,7 +1,6 @@
 import random
 import math
 import copy
-from vanilla import regret_affine
 from datasets import miniImageNet_few_shot, tiered_ImageNet_few_shot, ImageNet_few_shot
 from datasets import ISIC_few_shot, EuroSAT_few_shot, CropDisease_few_shot, Chest_few_shot
 from collections import OrderedDict
@@ -33,7 +32,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 class apply_twice:
     '''
-        A wrapper for torchvision transform. The transform is applied twice for
+        A wrapper for torchvision transform. The transform is applied twice for 
         SimCLR training
     '''
 
@@ -261,13 +260,8 @@ def main(args):
     # Create Optimizer
     ###########################
 
-    for layer in backbone.modules():
-        if isinstance(layer, nn.BatchNorm2d):
-            layer.bias.requires_grad = False
-            layer.weight.requires_grad = False
     optimizer = torch.optim.SGD([
-        {'params': filter(lambda p: p.requires_grad,
-                        backbone.parameters())},
+        {'params': backbone.parameters()},
         {'params': clf.parameters()}
     ],
         lr=0.1, momentum=0.9,
@@ -372,26 +366,21 @@ def main(args):
             clf.load_state_dict(sd_head)
 
             # create the optimizer
-            for layer in backbone.modules():
-                if isinstance(layer, nn.BatchNorm2d):
-                    layer.bias.requires_grad = False
-                    layer.weight.requires_grad = False
             optimizer = torch.optim.SGD([
-                {'params': filter(lambda p: p.requires_grad,
-                                backbone.parameters())},
+                {'params': backbone.parameters()},
                 {'params': clf.parameters()}
             ],
-            lr=current_lr, momentum=0.9,
-            weight_decay=args.wd,
-            nesterov=False)
+                lr=current_lr, momentum=0.9,
+                weight_decay=args.wd,
+                nesterov=False)
 
             logger.info(f'*** Testing Learning Rate: {current_lr}')
 
             # training for a bit
             for i in range(warm_up_epoch):
-                    perf = train(backbone, clf, optimizer,
-                                trainloader, base_trainloader,
-                                i, warm_up_epoch, logger, lr_log, args, device, turn_off_sync=True)
+                perf = train(backbone, clf, optimizer,
+                             trainloader, base_trainloader,
+                             i, warm_up_epoch, logger, lr_log, args, device, turn_off_sync=True)
 
             # compute the validation loss for picking learning rates
             perf_val = validate(backbone, clf,
@@ -408,13 +397,8 @@ def main(args):
         clf.load_state_dict(sd_head)
 
         logger.info(f"** Learning with lr: {current_lr}")
-        for layer in backbone.modules():
-            if isinstance(layer, nn.BatchNorm2d):
-                layer.bias.requires_grad = False
-                layer.weight.requires_grad = False
         optimizer = torch.optim.SGD([
-            {'params': filter(lambda p: p.requires_grad,
-                              backbone.parameters())},
+            {'params': backbone.parameters()},
             {'params': clf.parameters()}
         ],
             lr=current_lr, momentum=0.9,
@@ -531,13 +515,13 @@ def train(model, clf,
 
     end = time.time()
     for i, (X_base, y_base) in enumerate(base_trainloader):
-
+        
         meters.update('Data_time', time.time() - end)
 
         current_lr = optimizer.param_groups[0]['lr']
         meters.update('lr', current_lr, 1)
 
-        # Get the data from the target dataset
+        # Get the data from the base dataset
         try:
             (X1, X2), y = loader_iter.next()
         except StopIteration:
@@ -556,14 +540,13 @@ def train(model, clf,
         features_base = model(X_base)
         logits_base = clf(features_base)
 
-        source_stat = clone_BN_stat(model)
         source_affine = clone_BN_affine(model)
-
+        source_stat = clone_BN_stat(model)
 
         #  shift the affine
         f1 = model(X1)
         f2 = model(X2)
-        shift_bias(model, source_stat, device)
+        shift_mean(model, source_stat, device)
 
         shifted_features_base = model(X_base)
         shifted_logits_base = clf(shifted_features_base)
@@ -578,7 +561,7 @@ def train(model, clf,
 
         loss.backward()
         optimizer.step()
-        # print(clone_BN_affine(model))
+
         meters.update('Loss', loss.item(), 1)
         meters.update('MSE_Loss_target', loss_xtask.item(), 1)
         meters.update('CE_Loss_source', loss_base.item(), 1)
@@ -682,7 +665,7 @@ def validate(model, clf,
             #  shift the affine
             f1 = model(X1)
             f2 = model(X2)
-            shift_bias(model, source_stat, device)
+            shift_mean(model, source_stat, device)
 
             shifted_features_base = model(X_base)
             shifted_logits_base = clf(shifted_features_base)
@@ -693,10 +676,10 @@ def validate(model, clf,
             logits_base_all.append(logits_base)
             shifted_logits_base_all.append(shifted_logits_base)
             ys_base_all.append(y_base)
-
+            
     ys_base_all = torch.cat(ys_base_all, dim=0)
     logits_base_all = torch.cat(logits_base_all, dim=0)
-    shifted_logits_base_all = torch.cat(shifted_logits_base_all, dim=0)
+    shifted_logits_base_all =  torch.cat(shifted_logits_base_all, dim=0)
 
     loss_base = loss_ce(logits_base_all, ys_base_all)
     loss_xtask = mse_criterion(shifted_logits_base_all, logits_base_all)
@@ -742,7 +725,8 @@ def validate(model, clf,
     return averages
 
 
-def shift_bias(model, source_stat, device):
+def shift_mean(model, source_stat, device):
+    total_shift = 0
     i = 0
     for layer in model.modules():
         if isinstance(layer, nn.BatchNorm2d):
@@ -750,11 +734,13 @@ def shift_bias(model, source_stat, device):
             source_mean = source_stat[i]['means']
             source_var = source_stat[i]['vars']
             shift_value = (source_mean - target_mean)
+            total_shift += torch.sum(shift_value)
             # shift bias
             layer.bias = nn.Parameter(layer.bias + ((torch.rand(len(source_mean)).to(
                 device) * shift_value.to(device)).to(
                     device) * layer.weight / source_var)).to(device)
             i += 1
+    return total_shift
 
 
 def clone_BN_affine(model):
@@ -777,28 +763,28 @@ def clone_BN_stat(model):
     return BN_statistics_list
 
 
-# def regret_affine(model, source_affine):
-#     i = 0
-#     for layer in model.modules():
-#         if isinstance(layer, nn.BatchNorm2d):
-#             layer.bias = nn.Parameter(source_affine[i]['bias'])
-#             layer.weight = nn.Parameter(source_affine[i]['weight'])
-#             i += 1
+def regret_affine(model, source_affine):
+    i = 0
+    for layer in model.modules():
+        if isinstance(layer, nn.BatchNorm2d):
+            layer.bias = nn.Parameter(source_affine[i]['bias'])
+            layer.weight = nn.Parameter(source_affine[i]['weight'])
+            i += 1
 
 
-# def regret_stat(model, source_stat):
-#     i = 0
-#     for layer in model.modules():
-#         if isinstance(layer, nn.BatchNorm2d):
-#             layer.running_mean = nn.Parameter(source_stat[i]['means'])
-#             layer.running_var = nn.Parameter(source_stat[i]['vars'])
-#             i += 1
+def regret_stat(model, source_stat):
+    i = 0
+    for layer in model.modules():
+        if isinstance(layer, nn.BatchNorm2d):
+            layer.running_mean = nn.Parameter(source_stat[i]['means'])
+            layer.running_var = nn.Parameter(source_stat[i]['vars'])
+            i += 1
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='STARTUP')
-    parser.add_argument('--dir', type=str, default='./logs/BMS_in/EuroSAT',
+    parser.add_argument('--dir', type=str, default='./logs/BMS_in_na/EuroSAT',
                         help='directory to save the checkpoints')
 
     parser.add_argument('--bsize', type=int, default=32,
