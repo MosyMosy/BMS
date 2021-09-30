@@ -86,7 +86,11 @@ def get_BN_output(model, colors, layers=None, channels=None, position='before_af
                         i+1, statistics.mean(flat_list), statistics.stdev(flat_list))]
                 else:
                     BN_list += flat_list
-                    labels += ['Layer {0:02d}'.format(i+1)]
+                    if (channels is not None) and (len(channels) == 1):
+                        labels += ['Layer {0:02d} (beta: {1: 0.2f}, gamma: {2: 0.2f})'.format(
+                            i+1, layer.bias[channels[0]].item(), layer.weight[channels[0]].item())]
+                    else:
+                        labels += ['Layer {0:02d}'.format(i+1)]
                     if channels is None:
                         labels += [None]*(len(out)-1)
                     else:
@@ -214,7 +218,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 32
+b_size = 64
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -244,10 +248,10 @@ color_range = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
                ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-layers = [[1]]  # [[i] for i in range(12)]# [None] is for full network
-channels = [20]
+layers = [None]  # [[i] for i in range(12)]# [None] is for full network
+channels = None
 
 # compare_domains(models=models, base_x=base_x, EuroSAT_x=EuroSAT_x, color_range=color_range,
 #                 layers=layers, channels=channels, value_position='before_affine')
 
-compare_positions(models, data_x=base_x, color_range=color_range, layers=layers, channels=channels)
+compare_positions(models, data_x=EuroSAT_x, color_range=color_range, layers=layers, channels=channels)
