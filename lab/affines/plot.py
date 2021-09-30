@@ -126,7 +126,7 @@ models = []
 models.append(load_checkpoint2(
     ResNet10(), 'logs/baseline/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
-    ResNet10(), 'logs/vanilla/EuroSAT/checkpoint_best.pkl', device))
+    ResNet10(), 'logs/BMS_in/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
     ResNet10(), 'logs/AdaBN/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(

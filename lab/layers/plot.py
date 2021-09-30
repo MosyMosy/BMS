@@ -3,6 +3,7 @@ import statistics
 import joypy
 import matplotlib
 import numpy as np
+from numpy.core.fromnumeric import shape
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -52,13 +53,13 @@ def load_checkpoint2(model, load_path, device):
     return model
 
 
-def get_BN_output(model, colors, layers=None):
+def get_BN_output(model, colors, layers=None, channels=None, position='before_affine'):
     newcolors = []
     labels = []
     BN_list = []
     if layers is None:
         flatten = True
-    else: 
+    else:
         flatten = False
 
     i = 0
@@ -66,17 +67,18 @@ def get_BN_output(model, colors, layers=None):
         if isinstance(layer, nn.BatchNorm2d):
             if (layers is None) or (i in layers):
                 flat_list = []
-                out = layer.output / \
-                    layer.weight[None, :, None, None] - \
-                    layer.bias[None, :, None, None]
-                out = (layer.output.permute(
+                out = {'input': layer.input, 'output': layer.output}.get(
+                    position, layer.before_affine)
+                
+                out = (out.permute(
                     1, 0, 2, 3).mean([2, 3])).tolist()
 
-                for channel in out:
-                    if flatten:
-                        flat_list += channel
-                    else:
-                        flat_list.append(channel)
+                for j, channel in enumerate(out):
+                    if (channels is None) or (j in channels):
+                        if flatten:
+                            flat_list += channel
+                        else:
+                            flat_list.append(channel)
 
                 if flatten:
                     BN_list.append(flat_list)
@@ -85,7 +87,10 @@ def get_BN_output(model, colors, layers=None):
                 else:
                     BN_list += flat_list
                     labels += ['Layer {0:02d}'.format(i+1)]
-                    labels += [None]*(len(out)-1)
+                    if channels is None:
+                        labels += [None]*(len(out)-1)
+                    else:
+                        labels += [None]*(len(channels)-1)
 
                     clm = LinearSegmentedColormap.from_list(
                         "Custom", colors, N=len(out))
@@ -104,37 +109,112 @@ def get_BN_output(model, colors, layers=None):
     return BN_list, labels, ListedColormap(newcolors, name='custom')
 
 
-def to_grid(path_list, out = "lab/layers/grid.png"):
-    
+def to_grid(path_list, out="lab/layers/grid.png", shape=(4, 2)):
     blank_image = None
-    top_left = (0, 0)
-    for i in range(0, len(path_list), 2):
-        left = Image.open(path_list[i], mode='r')
-        right = Image.open(path_list[i+1], mode='r')
-        if blank_image is None:
-            blank_image = Image.new(mode='RGB', size=(left.width * 2, right.height * 4 ))
-        blank_image.paste(left, top_left)
-        top_left = (top_left[0] + left.width, top_left[1])
-        blank_image.paste(right, top_left)
-        top_left = (0, top_left[1] + right.height)
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            current_index = i * shape[1] + j
+            if current_index > (len(path_list) - 1):
+                continue
+            image = Image.open(path_list[current_index], mode='r')
+            if blank_image is None:
+                blank_image = Image.new(mode='RGB', size=(
+                    image.width * shape[1], image.height * shape[0]))
+            blank_image.paste(image, (j * image.width, i * image.height))
     blank_image.save(out)
+
+
+def compare_domains(models, base_x, EuroSAT_x, color_range, layers=[[None]], channels=None, value_position='before_affine'):
+    for l in layers:
+        path_list = []
+        for i, model in enumerate(models):
+            with torch.no_grad():
+                model(base_x)
+                mini_out, mini_labels, clm = get_BN_output(
+                    model, colors=color_range[i], layers=l, channels=channels, position=value_position)
+
+                model(EuroSAT_x)
+                Euro_out, EuroSAT_labels, clm = get_BN_output(
+                    model, colors=color_range[i], layers=l, channels=channels, position=value_position)
+
+                args = {'overlap': 4, 'bw_method': 0.2,
+                        'colormap': clm, 'linewidth': 0.3, 'x_range': [-2, 2], 'linecolor': 'w',
+                        'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
+                        'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+
+                joypy.joyplot(list(reversed(mini_out)), labels=list(
+                    reversed(mini_labels)), **args)
+                # plt.show()
+                path_list.append(
+                    "./lab/layers/{0}_to_MiniImageNet{1}.png".format(model_names[i], '_' + value_position))
+                plt.savefig(path_list[-1],)
+
+                joypy.joyplot(list(reversed(Euro_out)), labels=list(
+                    reversed(EuroSAT_labels)), **args)
+                # plt.show()
+                path_list.append(
+                    "./lab/layers/{0}_to_EuroSAT{1}.png".format(model_names[i], '_' + value_position))
+                plt.savefig(path_list[-1],)
+        to_grid(
+            path_list, out="lab/layers/grid_{0}{1}.png".format(l,  '_' + value_position))
+
+
+def compare_positions(models, data_x, color_range, layers=[[None]], channels=None):
+    for l in layers:
+        path_list = []
+        for i, model in enumerate(models):
+            with torch.no_grad():
+                model(data_x)
+                input_out, input_labels, clm = get_BN_output(
+                    model, colors=color_range[i], layers=l, channels=channels, position='input')
+                b_affine_out, b_affine_labels, clm = get_BN_output(
+                    model, colors=color_range[i], layers=l, channels=channels, position='before_affine')
+                output_out, output_labels, clm = get_BN_output(
+                    model, colors=color_range[i], layers=l, channels=channels, position='output')
+
+                args = {'overlap': 4, 'bw_method': 0.2,
+                        'colormap': clm, 'linewidth': 0.3, 'linecolor': 'w',
+                        'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
+                        'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(data_x))}
+
+                joypy.joyplot(list(reversed(input_out)), labels=list(
+                    reversed(input_labels)), **args)
+                path_list.append(
+                    "./lab/layers/{0}_BN's_{1}.png".format(model_names[i], 'input'))
+                plt.savefig(path_list[-1],)
+
+                joypy.joyplot(list(reversed(b_affine_out)), labels=list(
+                    reversed(b_affine_labels)), **args)
+                path_list.append(
+                    "./lab/layers/{0}_BN's{1}.png".format(model_names[i], 'before_affine'))
+                plt.savefig(path_list[-1],)
+
+                joypy.joyplot(list(reversed(output_out)), labels=list(
+                    reversed(output_labels)), **args)
+                path_list.append(
+                    "./lab/layers/{0}_BN's_{1}.png".format(model_names[i], 'output'))
+                plt.savefig(path_list[-1],)
+
+        to_grid(
+            path_list, out="lab/layers/grid_{0}_{1}.png".format(l,  'positions'), shape=(len(models), 3))
 
 
 device = torch.device("cpu")
 
-model_names = ['Baseline', 'BMS_Eurosat', 'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
+model_names = ['Baseline', 'BMS_in_Eurosat',
+               'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
 models = []
 models.append(load_checkpoint2(
     ResNet10(), 'logs/baseline/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
-    ResNet10(), 'logs/vanilla/EuroSAT/checkpoint_best.pkl', device))
+    ResNet10(), 'logs/BMS_in/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
     ResNet10(), 'logs/AdaBN/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 1024
+b_size = 32
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -160,67 +240,14 @@ EuroSAT_x, _ = iter(EuroSAT_loader).next()
 base_x, _ = iter(base_loader).next()
 
 
+color_range = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
+               ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 
-colors = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
-          ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+layers = [[1]]  # [[i] for i in range(12)]# [None] is for full network
+channels = [20]
 
-layers = [[i] for i in range(12)]# None is for full network
-for l in layers:
-    path_list = []
-    for i, model in enumerate(models):
-        with torch.no_grad():
-            model(base_x)
-            mini_out, mini_labels, clm = get_BN_output(
-                model, colors=colors[i], layers=l)
-            
-            model(EuroSAT_x)
-            Euro_out, EuroSAT_labels, clm = get_BN_output(
-                model, colors=colors[i], layers=l)
-            
-            args = {'overlap': 4, 'bw_method': 0.2,
-                    'colormap': clm, 'linewidth': 0.3, 'x_range': [-2, 2], 'linecolor': 'w',
-                    'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
-                    'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+# compare_domains(models=models, base_x=base_x, EuroSAT_x=EuroSAT_x, color_range=color_range,
+#                 layers=layers, channels=channels, value_position='before_affine')
 
-            joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
-            # plt.show()
-            path_list.append(
-                "./lab/layers/{0}_to_MiniImageNet.png".format(model_names[i]))
-            plt.savefig(path_list[-1],)
-
-            joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
-            # plt.show()
-            path_list.append(
-                "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
-            plt.savefig(path_list[-1],)
-    to_grid(path_list, out = "lab/layers/grid_{}.png".format(l))
-    
-l = None
-for i, model in enumerate(models):
-        with torch.no_grad():
-            model(base_x)
-            mini_out, mini_labels, clm = get_BN_output(
-                model, colors=colors[i], layers=l)
-            
-            model(EuroSAT_x)
-            Euro_out, EuroSAT_labels, clm = get_BN_output(
-                model, colors=colors[i], layers=l)
-            
-            args = {'overlap': 4, 'bw_method': 0.2,
-                    'colormap': clm, 'linewidth': 0.3, 'x_range': [-2, 2], 'linecolor': 'w',
-                    'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
-                    'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
-
-            joypy.joyplot(list(reversed(mini_out)), labels= list(reversed(mini_labels)), **args)
-            # plt.show()
-            path_list.append(
-                "./lab/layers/{0}_to_MiniImageNet.png".format(model_names[i]))
-            plt.savefig(path_list[-1],)
-
-            joypy.joyplot(list(reversed(Euro_out)), labels= list(reversed(EuroSAT_labels)), **args)
-            # plt.show()
-            path_list.append(
-                "./lab/layers/{0}_to_EuroSAT.png".format(model_names[i]))
-            plt.savefig(path_list[-1],)
-        to_grid(path_list, out = "lab/layers/grid_all.png")
-    # plt.cla()
+compare_positions(models, data_x=base_x, color_range=color_range, layers=layers, channels=channels)

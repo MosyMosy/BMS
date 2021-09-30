@@ -14,6 +14,8 @@ class BatchNorm2d_plus(nn.BatchNorm2d):
         super(BatchNorm2d_plus, self).__init__(
             num_features, eps, momentum, affine, track_running_stats)
         self.output = None
+        self.input = None
+        self.before_affine = None
 
     def forward(self, input):
         self._check_input_dim(input)
@@ -52,6 +54,8 @@ class BatchNorm2d_plus(nn.BatchNorm2d):
         passed when the update should occur (i.e. in training mode when they are tracked), or when buffer stats are
         used for normalization (i.e. in eval mode when buffers are not None).
         """
+        self.input = input.clone()
+        
         self.output = F.batch_norm(
             input,
             # If buffers are not to be tracked, ensure that they won't be updated
@@ -65,4 +69,19 @@ class BatchNorm2d_plus(nn.BatchNorm2d):
             exponential_average_factor,
             self.eps,
         )
+        
+        self.before_affine = F.batch_norm(
+            self.input,
+            # If buffers are not to be tracked, ensure that they won't be updated
+            self.running_mean, # do not update the statistics
+            self.running_var, # do not update the statistics
+            None, # self.weight = None do not apply the affine
+            None, # self.bias = None do not apply the affine
+            False,  # bn_training = False. do not update the statistics
+            1,
+            self.eps,
+        )
+        # self.before_affine_ = (
+        #     self.output - self.bias[None, :, None, None])/self.weight[None, :, None, None]
+        # print(torch.sum(self.before_affine - self.before_affine_))
         return self.output
