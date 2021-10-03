@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-methods = ['STARTUP_na'] #['vanilla', 'BMS_in', 'BAS_in', 'baseline', 'baseline_na']
+methods = ['vanilla'] #['vanilla', 'BMS_in', 'BAS_in', 'baseline', 'baseline_na']
 target_datasets = ['EuroSAT', 'CropDisease', 'ISIC', 'ChestX']
 
 def get_logs_path(method, target):
