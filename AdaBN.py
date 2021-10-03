@@ -171,7 +171,7 @@ def main(args):
 
     logger.info('load the pretrained model')
     load_checkpoint(
-        backbone, 'logs/AdaBN/teacher_miniImageNet/399.tar', device)
+        backbone, args.base_dictionary, device)
 
     for epoch in range(starting_epoch, args.epochs):
         addapt(backbone, trainloader, epoch, args.epochs, logger, args, device)
@@ -302,6 +302,6 @@ if __name__ == '__main__':
                         help='path to the csv files that specifies the unlabeled split for the target dataset')
     parser.add_argument('--image_size', type=int, default=224,
                         help='Resolution of the input image')
-
+    parser.add_argument('--base_dictionary',  help='base model to addapt')
     args = parser.parse_args()
     main(args)

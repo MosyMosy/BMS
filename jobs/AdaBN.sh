@@ -67,7 +67,7 @@ cd BMS
 target_testset="EuroSAT"
 for target_testset in "ChestX" "ISIC" "EuroSAT" "CropDisease"
 do
-    python AdaBN.py --dir ./logs/AdaBN/$target_testset --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 10 --model resnet10 &
+    python AdaBN.py --dir ./logs/AdaBN/$target_testset --base_dictionary logs/AdaBN/teacher_miniImageNet/399.tar --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 10 --model resnet10 &
 done
 wait
 
