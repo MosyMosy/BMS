@@ -5,13 +5,13 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
 #SBATCH --mail-type=ALL
-#SBATCH --job-name=AdaBN_na
+#SBATCH --job-name=AdaBN_na_tune
 #SBATCH --output=%x-%j.out
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=32
 #SBATCH --mem=127000M
-#SBATCH --time=0-06:00
+#SBATCH --time=2-00:00
 #SBATCH --account=rrg-ebrahimi
 
 nvidia-smi
@@ -63,12 +63,11 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
+python finetune.py --save_dir ./logs/AdaBN_na/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/AdaBN_na/EuroSAT/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/AdaBN_na/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/AdaBN_na/CropDisease/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/AdaBN_na/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/AdaBN_na/ISIC/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/AdaBN_na/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/AdaBN_na/ChestX/checkpoint_best.pkl --freeze_backbone &
 
-target_testset="EuroSAT"
-for target_testset in "ChestX" "ISIC" "EuroSAT" "CropDisease"
-do
-    python AdaBN.py --dir ./logs/AdaBN_na/$target_testset --base_dictionary logs/AdaBN_na/teacher_miniImageNet_na/399.tar --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 10 --model resnet10 &
-done
 wait
 
 echo "-----------------------------------<End of run the program>---------------------------------"
@@ -76,4 +75,4 @@ date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_na/ ~/scratch/BMS/logs/
+cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_na ~/scratch/BMS/logs/
