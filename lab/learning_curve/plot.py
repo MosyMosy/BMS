@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-methods = ['vanilla', 'BMS_in', 'BAS_in', 'baseline', 'baseline_na']
+methods = ['STARTUP_na'] #['vanilla', 'BMS_in', 'BAS_in', 'baseline', 'baseline_na']
 target_datasets = ['EuroSAT', 'CropDisease', 'ISIC', 'ChestX']
 
 def get_logs_path(method, target):
@@ -98,5 +98,5 @@ def compare_baselines():
     
     plt.show()
     
-# plot_all()
-compare_baselines()
+plot_all()
+# compare_baselines()
