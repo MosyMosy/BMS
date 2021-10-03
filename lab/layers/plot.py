@@ -1,4 +1,6 @@
 from collections import OrderedDict
+from math import trunc
+import math
 import statistics
 import joypy
 import matplotlib
@@ -67,12 +69,10 @@ def get_BN_output(model, colors, layers=None, channels=None, position='before_af
         if isinstance(layer, nn.BatchNorm2d):
             if (layers is None) or (i in layers):
                 flat_list = []
-                out = {'input': layer.input, 'output': layer.output}.get(
-                    position, layer.before_affine)
-                
-                out = (out.permute(
-                    1, 0, 2, 3).mean([2, 3])).tolist()
-
+                out = {'input': layer.input.clone(), 'output': layer.output.clone()}.get(
+                    position, layer.before_affine.clone())                
+                out = out.permute(1,0,2,3)
+                out = out.flatten(start_dim=1).squeeze().tolist()
                 for j, channel in enumerate(out):
                     if (channels is None) or (j in channels):
                         if flatten:
@@ -83,12 +83,12 @@ def get_BN_output(model, colors, layers=None, channels=None, position='before_af
                 if flatten:
                     BN_list.append(flat_list)
                     labels += ['Layer {0:02d} ({1: 0.2f}, {2: 0.2f})'.format(
-                        i+1, statistics.mean(flat_list), statistics.stdev(flat_list))]
+                        i+1, torch.tensor(flat_list).mean(),torch.tensor(flat_list).std())]
                 else:
                     BN_list += flat_list
                     if (channels is not None) and (len(channels) == 1):
-                        labels += ['Layer {0:02d} (beta: {1: 0.2f}, gamma: {2: 0.2f})'.format(
-                            i+1, layer.bias[channels[0]].item(), layer.weight[channels[0]].item())]
+                        labels += ['Layer {0:02d} ({1: 0.2f}, {2: 0.2f})'.format(
+                            i+1, statistics.mean(flat_list[0]), statistics.stdev(flat_list[0]))]
                     else:
                         labels += ['Layer {0:02d}'.format(i+1)]
                     if channels is None:
@@ -160,7 +160,7 @@ def compare_domains(models, base_x, EuroSAT_x, color_range, layers=[[None]], cha
                     "./lab/layers/{0}_to_EuroSAT{1}.png".format(model_names[i], '_' + value_position))
                 plt.savefig(path_list[-1],)
         to_grid(
-            path_list, out="lab/layers/grid_{0}{1}.png".format(l,  '_' + value_position))
+            path_list, out="lab/layers/grid_{0}{1}.png".format(l,  '_' + value_position), shape=(len(models), 2))
 
 
 def compare_positions(models, data_x, color_range, layers=[[None]], channels=None):
@@ -203,11 +203,44 @@ def compare_positions(models, data_x, color_range, layers=[[None]], channels=Non
             path_list, out="lab/layers/grid_{0}_{1}.png".format(l,  'positions'), shape=(len(models), 3))
 
 
+def compare_models(models, data_x, color_range, layers=[[None]], channels=None, value_position='input'):
+    for l in layers:
+        path_list = []
+        for i, model in enumerate(models):
+            with torch.no_grad():
+                model(data_x)
+                out, labels, clm = get_BN_output(
+                    model, colors=color_range[math.floor(i/2)], layers=l, channels=channels, position=value_position)
+
+                args = {'overlap': 4, 'bw_method': 0.2,
+                        'colormap': clm, 'linewidth': 0.3, 'linecolor': 'w',
+                        'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
+                        'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+
+                joypy.joyplot(list(reversed(out)), labels=list(
+                    reversed(labels)), **args)
+                # plt.show()
+                path_list.append(
+                    "./lab/layers/{0}.png".format(i))
+                plt.savefig(path_list[-1],)
+        to_grid(
+            path_list, out="lab/layers/grid_models_{0}{1}.png".format(l,  '_' + value_position), shape=(int(len(models)/2), 2))
+
+
 device = torch.device("cpu")
+
+
+models = []
+models_na = []
+
+model_names_na = ['Baseline_na', 'BMS_in_Eurosat_na']
+models_na.append(load_checkpoint2(
+    ResNet10(), 'logs/baseline_na/checkpoint_best.pkl', device))
+models_na.append(load_checkpoint2(
+    ResNet10(), 'logs/BMS_in_na/EuroSAT/checkpoint_best.pkl', device))
 
 model_names = ['Baseline', 'BMS_in_Eurosat',
                'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
-models = []
 models.append(load_checkpoint2(
     ResNet10(), 'logs/baseline/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
@@ -218,7 +251,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 64
+b_size = 32
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -252,6 +285,9 @@ layers = [None]  # [[i] for i in range(12)]# [None] is for full network
 channels = None
 
 # compare_domains(models=models, base_x=base_x, EuroSAT_x=EuroSAT_x, color_range=color_range,
-#                 layers=layers, channels=channels, value_position='before_affine')
+#                 layers=layers, channels=channels, value_position='input')
 
-compare_positions(models, data_x=EuroSAT_x, color_range=color_range, layers=layers, channels=channels)
+compare_positions(models, data_x=base_x,
+                  color_range=color_range, layers=layers, channels=channels)
+
+# compare_models([models[0], models_na[0],models[1], models_na[1]], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
