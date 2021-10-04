@@ -6,17 +6,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-methods = ['vanilla'] #['vanilla', 'BMS_in', 'BAS_in', 'baseline', 'baseline_na']
+methods = ['STARTUP_na'] #['vanilla', 'BMS_in', 'BAS_in', 'baseline', 'baseline_na']
 target_datasets = ['EuroSAT', 'CropDisease', 'ISIC', 'ChestX']
 
-def get_logs_path(method, target):
+def get_logs_path(method, target = ''):
     root = './logs'
     method_path = root + '/' + method
     if os.path.isdir(method_path) == False:
-        print('The methode {}\'s  path doesn\'t exist'.format(method))        
-    log_path = method_path + '/' + target
-    if os.path.isdir(log_path) == False:
-        log_path = method_path
+        print('The methode {}\'s  path doesn\'t exist'.format(method))
+    if target == '':
+        return method_path
+    log_path = method_path + '/' + target    
     return log_path
 
 
@@ -46,57 +46,88 @@ def plot_all():
                 plt.title('{0}_{1}'.format(method, target))
                 plt.show()
 
-def compare_baselines():
-    ['baseline', 'baseline_na']
-    baseline_method = 'baseline'
-    baseline_na_method = 'baseline_na'
+def compare_methodes(method1,method2, target1, target2):
     root = './logs'
-    baseline_path = root + '/' + baseline_method
-    baseline_na_path = root + '/' + baseline_na_method
+    method1_path = get_logs_path(method1, target1)
+    method2_path = get_logs_path(method2, target2)
     
-    baseline_check = baseline_path + '/' + 'checkpoint_best.pkl'
-    baseline_na_check = baseline_na_path + '/' + 'checkpoint_best.pkl'
-    baseline_train_log = glob.glob(baseline_path + '/' + 'train_*.csv')
-    baseline_val_log = glob.glob(baseline_path + '/' + 'val_*.csv')
-    baseline_na_train_log = glob.glob(baseline_na_path + '/' + 'train_*.csv')
-    baseline_na_val_log = glob.glob(baseline_na_path + '/' + 'val_*.csv')
+    method1_check = method1_path + '/' + 'checkpoint_best.pkl'
+    method2_check = method2_path + '/' + 'checkpoint_best.pkl'
+    method1_train_log = glob.glob(method1_path + '/' + 'train_*.csv')
+    method1_val_log = glob.glob(method1_path + '/' + 'val_*.csv')
+    method2_train_log = glob.glob(method2_path + '/' + 'train_*.csv')
+    method2_val_log = glob.glob(method2_path + '/' + 'val_*.csv')
     
-    baseline_train_log = baseline_train_log[0].replace('\\', '/')
-    baseline_val_log = baseline_val_log[0].replace('\\', '/')
-    baseline_na_train_log = baseline_na_train_log[0].replace('\\', '/')
-    baseline_na_val_log = baseline_na_val_log[0].replace('\\', '/')
+    method1_train_log = method1_train_log[0].replace('\\', '/')
+    method1_val_log = method1_val_log[0].replace('\\', '/')
+    method2_train_log = method2_train_log[0].replace('\\', '/')
+    method2_val_log = method2_val_log[0].replace('\\', '/')
     
-    df_baseline_train = pd.read_csv(baseline_train_log)
-    df_baseline_val = pd.read_csv(baseline_val_log)
-    df_baseline_na_train = pd.read_csv(baseline_na_train_log)
-    df_baseline_na_val = pd.read_csv(baseline_na_val_log)
+    df_method1_train = pd.read_csv(method1_train_log)
+    df_method1_val = pd.read_csv(method1_val_log)
+    df_method2_train = pd.read_csv(method2_train_log)
+    df_method2_val = pd.read_csv(method2_val_log)
     
-    columns = df_baseline_val.columns
-    df_baseline_val = pd.DataFrame(np.repeat(df_baseline_val.values,2,axis=0))
-    df_baseline_na_val = pd.DataFrame(np.repeat(df_baseline_na_val.values,2,axis=0))   
-    df_baseline_val.columns = columns 
-    df_baseline_na_val.columns = columns
+    columns = df_method1_val.columns
+    df_method1_val = pd.DataFrame(np.repeat(df_method1_val.values,2,axis=0))
+    df_method2_val = pd.DataFrame(np.repeat(df_method2_val.values,2,axis=0))   
+    df_method1_val.columns = columns 
+    df_method2_val.columns = columns
         
     df = pd.DataFrame()
-    df['baseline_train_loss'] = df_baseline_train['Loss']
-    df['baseline_na_train_loss'] = df_baseline_na_train['Loss']
-    df.plot( y=["baseline_train_loss", 'baseline_na_train_loss'])
+    df['method1_train_loss'] = df_method1_train['Loss']
+    df['method2_train_loss'] = df_method2_train['Loss']
+    df.plot( y=["method1_train_loss", 'method2_train_loss'])
     plt.axvline(x=354, color='blue')
     plt.axvline(x=332, color='orange')
     
-    df['baseline_val_loss'] = df_baseline_val['Loss_test']
-    df['baseline_na_val_loss'] = df_baseline_na_val['Loss_test']
-    df.plot( y=["baseline_val_loss", 'baseline_na_val_loss'])
+    df['method1_val_loss'] = df_method1_val['Loss_test']
+    df['method2_val_loss'] = df_method2_val['Loss_test']
+    df.plot( y=["method1_val_loss", 'method2_val_loss'])
     plt.axvline(x=354, color='blue')
     plt.axvline(x=332, color='orange')
     
-    df['baseline_val_top1'] = df_baseline_val['top1_base_test']
-    df['baseline_na_val_top1'] = df_baseline_na_val['top1_base_test']
-    df.plot( y=["baseline_val_top1", 'baseline_na_val_top1'])
+    df['method1_val_top1'] = df_method1_val['top1_base_test']
+    df['method2_val_top1'] = df_method2_val['top1_base_test']
+    df.plot( y=["method1_val_top1", 'method2_val_top1'])
     plt.axvline(x=354, color='blue')
     plt.axvline(x=332, color='orange')
     
     plt.show()
+
+
+def STARTUP_losses(method1, target1):
+    root = './logs'
+    method1_path = get_logs_path(method1, target1)
     
+    method1_check = method1_path + '/' + 'checkpoint_best.pkl'
+    method1_train_log = glob.glob(method1_path + '/' + 'train_*.csv')
+    method1_val_log = glob.glob(method1_path + '/' + 'val_*.csv')
+    
+    method1_train_log = method1_train_log[0].replace('\\', '/')
+    method1_val_log = method1_val_log[0].replace('\\', '/')
+    
+    df_method1_train = pd.read_csv(method1_train_log)
+    df_method1_val = pd.read_csv(method1_val_log)
+    
+    # columns = df_method1_val.columns
+    # df_method1_val = pd.DataFrame(np.repeat(df_method1_val.values,2,axis=0))  
+    # df_method1_val.columns = columns
+        
+    df_method1_train.plot( y=['CE_Loss_source', "KL_Loss_target", 'SIMCLR_Loss_target'])
+    # plt.axvline(x=354, color='blue')
+    # plt.axvline(x=332, color='orange')		
+    plt.title('Loss Train')
+    
+    df_method1_val.plot( y=["CE_Loss_source_test", 'KL_Loss_target_test', 'SIMCLR_Loss_target_test'])
+    # plt.axvline(x=354, color='blue')
+    # plt.axvline(x=332, color='orange')
+    plt.title('Loss Val')
+
+    
+    plt.show()
+    
+# plot_all()
+
 plot_all()
-# compare_baselines()
+STARTUP_losses('STARTUP_na', 'EuroSAT')
