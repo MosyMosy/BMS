@@ -129,5 +129,5 @@ def STARTUP_losses(method1, target1):
     
 # plot_all()
 
-plot_all()
-STARTUP_losses('STARTUP_na', 'EuroSAT')
+# plot_all()
+STARTUP_losses('STARTUP', 'EuroSAT')
