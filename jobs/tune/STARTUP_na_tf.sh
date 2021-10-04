@@ -11,7 +11,7 @@
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=32
 #SBATCH --mem=127000M
-#SBATCH --time=2-00:00
+#SBATCH --time=0-08:00
 #SBATCH --account=rrg-ebrahimi
 
 nvidia-smi
@@ -63,9 +63,9 @@ date +"%T"
 cd $SLURM_TMPDIR
 
 cd BMS
-python finetune.py --save_dir ./logs/STARTUP_na_tf/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/STARTUP_na_tf/EuroSAT/checkpoint_best.pkl --freeze_backbone &
-python finetune.py --save_dir ./logs/STARTUP_na_tf/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/STARTUP_na_tf/CropDisease/checkpoint_best.pkl --freeze_backbone &
-python finetune.py --save_dir ./logs/STARTUP_na_tf/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/STARTUP_na_tf/ISIC/checkpoint_best.pkl --freeze_backbone &
+# python finetune.py --save_dir ./logs/STARTUP_na_tf/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/STARTUP_na_tf/EuroSAT/checkpoint_best.pkl --freeze_backbone &
+# python finetune.py --save_dir ./logs/STARTUP_na_tf/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/STARTUP_na_tf/CropDisease/checkpoint_best.pkl --freeze_backbone &
+# python finetune.py --save_dir ./logs/STARTUP_na_tf/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/STARTUP_na_tf/ISIC/checkpoint_best.pkl --freeze_backbone &
 python finetune.py --save_dir ./logs/STARTUP_na_tf/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/STARTUP_na_tf/ChestX/checkpoint_best.pkl --freeze_backbone &
 
 wait
