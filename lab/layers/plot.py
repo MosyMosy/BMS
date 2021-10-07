@@ -7,6 +7,7 @@ import matplotlib
 import numpy as np
 from numpy.core.fromnumeric import shape
 import pandas as pd
+from pandas.core import groupby
 import torch
 import torch.nn as nn
 from datasets import (Chest_few_shot, CropDisease_few_shot, EuroSAT_few_shot,
@@ -55,15 +56,16 @@ def load_checkpoint2(model, load_path, device):
     return model
 
 
-def get_BN_output(model, colors, layers=None, channels=None, position='before_affine'):
+def get_BN_output(model, colors, layers=None, channels=None, position='before_affine', flatten = False):
     newcolors = []
     labels = []
     BN_list = []
-    if layers is None:
+    if (layers is None) or flatten:
         flatten = True
     else:
         flatten = False
 
+    
     i = 0
     for layer in model.modules():
         if isinstance(layer, nn.BatchNorm2d):
@@ -160,7 +162,7 @@ def compare_domains(models, base_x, EuroSAT_x, color_range, layers=[[None]], cha
                     "./lab/layers/{0}_to_EuroSAT{1}.png".format(model_names[i], '_' + value_position))
                 plt.savefig(path_list[-1],)
         to_grid(
-            path_list, out="lab/layers/grid_{0}{1}.png".format(l,  '_' + value_position), shape=(len(models), 2))
+            path_list, out="lab/layers/compare_domains_{0}{1}.png".format(l,  '_' + value_position), shape=(len(models), 2))
 
 
 def compare_positions(models, data_x, color_range, layers=[[None]], channels=None):
@@ -200,8 +202,7 @@ def compare_positions(models, data_x, color_range, layers=[[None]], channels=Non
                 plt.savefig(path_list[-1],)
 
         to_grid(
-            path_list, out="lab/layers/grid_{0}_{1}.png".format(l,  'positions'), shape=(len(models), 3))
-
+            path_list, out="lab/layers/compare_positions_{0}_{1}.png".format(l,  'positions'), shape=(len(models), 3))
 
 def compare_models(models, data_x, color_range, layers=[[None]], channels=None, value_position='input'):
     for l in layers:
@@ -224,12 +225,45 @@ def compare_models(models, data_x, color_range, layers=[[None]], channels=None, 
                     "./lab/layers/{0}.png".format(i))
                 plt.savefig(path_list[-1],)
         to_grid(
-            path_list, out="lab/layers/grid_models_{0}{1}.png".format(l,  '_' + value_position), shape=(int(len(models)/2), 2))
+            path_list, out="lab/layers/compare_models_{0}{1}.png".format(l,  '_' + value_position), shape=(int(len(models)/2), 2))
+
+def compare_two_models(model, model_na, data_x, color_range, layers=[None], channels=None, value_position='input'):
+    df = pd.DataFrame()    
+    path_list = []      
+    with torch.no_grad():
+        model(data_x)
+        model_na(data_x)
+        out, labels, clm = get_BN_output(
+            model, colors=color_range[0], layers=layers, channels=channels, position=value_position, flatten=True)
+        out_na, labels, clm = get_BN_output(
+            model_na, colors=color_range[0], layers=layers, channels=channels, position=value_position, flatten=True)
+
+        args = {'overlap': 4, 'bw_method': 0.2,
+                'linewidth': 1, 'legend':True, 'color':["#00E7E7","#008181"],
+                'background': 'w',  'alpha': 0.5, 'figsize': (10, 10), 'fill': True, 'x_range':[-50,50],
+                'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+    
+    out_list = []
+    out_list_na = []
+    layer_list = []
+    for i, (l, l_na) in enumerate(zip(out, out_na)):
+        out_list += l
+        out_list_na += l_na
+        layer_list += ['layer {0:02d}'.format(i)] * len(l)
+    df['with affine'] = out_list
+    df['without affine'] = out_list_na
+    df['layer'] = layer_list
+    print('ploting')
+    joypy.joyplot(df, by='layer', **args)
+    # 
+    path_list.append(
+        "./lab/layers/compare_two_models_{0}.pdf".format(value_position))
+
+    plt.savefig(path_list[-1],)
+    # plt.show()
 
 
 device = torch.device("cpu")
-
-
 models = []
 models_na = []
 
@@ -251,7 +285,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 32
+b_size = 64
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -281,13 +315,18 @@ color_range = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
                ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-layers = [None]  # [[i] for i in range(12)]# [None] is for full network
+layers = [[i] for i in range(1)]# [None] is for full network
 channels = None
 
 # compare_domains(models=models, base_x=base_x, EuroSAT_x=EuroSAT_x, color_range=color_range,
 #                 layers=layers, channels=channels, value_position='input')
 
-compare_positions(models, data_x=base_x,
-                  color_range=color_range, layers=layers, channels=channels)
+# compare_positions(models, data_x=base_x,
+#                   color_range=color_range, layers=layers, channels=channels)
 
-# compare_models([models[0], models_na[0],models[1], models_na[1]], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
+# compare_models([models[0], models_na[0]], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
+
+layers = range(12)
+compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
+compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='output')
+compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='before_affine')
