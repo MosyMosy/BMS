@@ -240,7 +240,7 @@ def compare_two_models(model, model_na, data_x, color_range, layers=[None], chan
 
         args = {'overlap': 4, 'bw_method': 0.2,
                 'linewidth': 1, 'legend':True, 'color':["#00E7E7","#008181"],
-                'background': 'w',  'alpha': 0.5, 'figsize': (10, 30), 'fill': True, 'x_range':[-50,50],
+                'background': 'w',  'alpha': 0.5, 'figsize': (10, 15), 'fill': True, 'x_range':[-50,50],
                 'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
     
     out_list = []
@@ -285,7 +285,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 64
+b_size = 4
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -326,7 +326,7 @@ channels = None
 
 # compare_models([models[0], models_na[0]], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
 
-layers = range(12)
+layers = range(2,5)
 compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
 compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='output')
 compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='before_affine')
