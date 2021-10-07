@@ -1,0 +1,6 @@
+NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.
+
+------------------------------------< Data preparation>----------------------------------
+Copying the source code
+06:11:15
+slurmstepd: error: *** JOB 26129412 ON blg9410 CANCELLED AT 2021-10-07T10:12:01 ***
