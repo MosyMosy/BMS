@@ -240,7 +240,7 @@ def compare_two_models(model, model_na, data_x, color_range, layers=[None], chan
 
         args = {'overlap': 4, 'bw_method': 0.2,
                 'linewidth': 1, 'legend':True, 'color':["#00E7E7","#008181"],
-                'background': 'w',  'alpha': 0.5, 'figsize': (15, 10), 'fill': True, 'x_range':[-50,50],
+                'background': 'w',  'alpha': 0.5, 'figsize': (10, 15), 'fill': True, 'x_range':[-50,50],
                 'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
     
     out_list = []
