@@ -227,7 +227,7 @@ def compare_models(models, data_x, color_range, layers=[[None]], channels=None, 
         to_grid(
             path_list, out="lab/layers/compare_models_{0}{1}.png".format(l,  '_' + value_position), shape=(int(len(models)/2), 2))
 
-def compare_two_models(model, model_na, data_x, color_range, layers=[None], channels=None, value_position='input'):
+def compare_two_models(model, model_na, data_x, color_range, layers=None, channels=None, value_position='input'):
     df = pd.DataFrame()    
     path_list = []      
     with torch.no_grad():
@@ -242,14 +242,14 @@ def compare_two_models(model, model_na, data_x, color_range, layers=[None], chan
                 'linewidth': 1, 'legend':True, 'color':["#00E7E7","#008181"],
                 'background': 'w',  'alpha': 0.5, 'figsize': (10, 15), 'fill': True, 'x_range':[-50,50],
                 'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
-    
+    if layers is None: layers = range(len(out))
     out_list = []
     out_list_na = []
     layer_list = []
     for i, (l, l_na) in enumerate(zip(out, out_na)):
         out_list += l
         out_list_na += l_na
-        layer_list += ['layer {0:02d}'.format(i)] * len(l)
+        layer_list += ['layer {0:02d}'.format(layers[i])] * len(l)
     df['with affine'] = out_list
     df['without affine'] = out_list_na
     df['layer'] = layer_list
@@ -257,7 +257,7 @@ def compare_two_models(model, model_na, data_x, color_range, layers=[None], chan
     joypy.joyplot(df, by='layer', **args)
     # 
     path_list.append(
-        "./lab/layers/compare_two_models_10_{0}.pdf".format(value_position))
+        "./lab/layers/compare_two_models_{0}.pdf".format(value_position))
 
     plt.savefig(path_list[-1],)
     # plt.show()
@@ -285,7 +285,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 64
+b_size = 1
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -326,7 +326,7 @@ channels = None
 
 # compare_models([models[0], models_na[0]], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
 
-layers = range(12)
+layers = range(2,5)
 compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
-compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='output')
-compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='before_affine')
+# compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='output')
+# compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='before_affine')

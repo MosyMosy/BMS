@@ -199,21 +199,9 @@ def load_checkpoint(model, load_path, device):
     Load model and optimizer from load path 
     Return the epoch to continue the checkpoint
     '''
-    state = torch.load(load_path, map_location=torch.device(device))['state']
-    clf_state = OrderedDict()
-    state_keys = list(state.keys())
-    for _, key in enumerate(state_keys):
-        if "feature." in key:
-            # an architecture model has attribute 'feature', load architecture
-            # feature to backbone by casting name from 'feature.trunk.xx' to 'trunk.xx'
-            newkey = key.replace("feature.", "")
-            state[newkey] = state.pop(key)
-        elif "classifier." in key:
-            newkey = key.replace("classifier.", "")
-            clf_state[newkey] = state.pop(key)
-        else:
-            state.pop(key)
-    model.load_state_dict(state)
+    sd = torch.load(load_path, map_location=torch.device(device))
+    model.load_state_dict(sd['model'])
+    model.eval()
 
 
 def addapt(model, trainloader, epoch,

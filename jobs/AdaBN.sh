@@ -67,9 +67,17 @@ cd BMS
 target_testset="EuroSAT"
 for target_testset in "ChestX" "ISIC" "EuroSAT" "CropDisease"
 do
-    python AdaBN.py --dir ./logs/AdaBN/$target_testset --base_dictionary logs/AdaBN/teacher_miniImageNet/399.tar --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 10 --model resnet10 &
+    python AdaBN.py --dir ./logs/AdaBN/$target_testset --base_dictionary logs/baseline/checkpoint_best.pkl --target_dataset $target_testset --target_subset_split datasets/split_seed_1/$target_testset\_unlabeled_20.csv --bsize 256 --epochs 10 --model resnet10 &
 done
 wait
+
+python finetune.py --save_dir ./logs/AdaBN/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/AdaBN/EuroSAT/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/AdaBN/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/AdaBN/CropDisease/checkpoint_best.pkl --freeze_backbone &
+python finetune.py --save_dir ./logs/AdaBN/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/AdaBN/ISIC/checkpoint_best.pkl --freeze_backbone &
+wait
+python finetune.py --save_dir ./logs/AdaBN/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/AdaBN/ChestX/checkpoint_best.pkl --freeze_backbone
+
+
 
 echo "-----------------------------------<End of run the program>---------------------------------"
 date +"%T"
