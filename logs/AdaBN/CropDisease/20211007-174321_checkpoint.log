@@ -1,0 +1,55 @@
+INFO dir: ./logs/AdaBN/CropDisease
+INFO bsize: 256
+INFO epochs: 10
+INFO save_freq: 50
+INFO eval_freq: 2
+INFO print_freq: 10
+INFO load_path: None
+INFO seed: 1
+INFO wd: 0.0001
+INFO resume_latest: False
+INFO num_workers: 4
+INFO iteration_bp: None
+INFO model: resnet10
+INFO backbone_random_init: False
+INFO base_dataset: miniImageNet
+INFO base_path: ./data/miniImagenet
+INFO base_split: None
+INFO base_no_color_jitter: False
+INFO base_val_ratio: 0.05
+INFO batch_validate: False
+INFO target_dataset: CropDisease
+INFO target_subset_split: datasets/split_seed_1/CropDisease_unlabeled_20.csv
+INFO image_size: 224
+INFO base_dictionary: logs/baseline/checkpoint_best.pkl
+INFO load the pretrained model
+INFO Training Epoch: [0/10] Step: [10 / 33]
+INFO Training Epoch: [0/10] Step: [20 / 33]
+INFO Training Epoch: [0/10] Step: [30 / 33]
+INFO Training Epoch: [1/10] Step: [10 / 33]
+INFO Training Epoch: [1/10] Step: [20 / 33]
+INFO Training Epoch: [1/10] Step: [30 / 33]
+INFO Training Epoch: [2/10] Step: [10 / 33]
+INFO Training Epoch: [2/10] Step: [20 / 33]
+INFO Training Epoch: [2/10] Step: [30 / 33]
+INFO Training Epoch: [3/10] Step: [10 / 33]
+INFO Training Epoch: [3/10] Step: [20 / 33]
+INFO Training Epoch: [3/10] Step: [30 / 33]
+INFO Training Epoch: [4/10] Step: [10 / 33]
+INFO Training Epoch: [4/10] Step: [20 / 33]
+INFO Training Epoch: [4/10] Step: [30 / 33]
+INFO Training Epoch: [5/10] Step: [10 / 33]
+INFO Training Epoch: [5/10] Step: [20 / 33]
+INFO Training Epoch: [5/10] Step: [30 / 33]
+INFO Training Epoch: [6/10] Step: [10 / 33]
+INFO Training Epoch: [6/10] Step: [20 / 33]
+INFO Training Epoch: [6/10] Step: [30 / 33]
+INFO Training Epoch: [7/10] Step: [10 / 33]
+INFO Training Epoch: [7/10] Step: [20 / 33]
+INFO Training Epoch: [7/10] Step: [30 / 33]
+INFO Training Epoch: [8/10] Step: [10 / 33]
+INFO Training Epoch: [8/10] Step: [20 / 33]
+INFO Training Epoch: [8/10] Step: [30 / 33]
+INFO Training Epoch: [9/10] Step: [10 / 33]
+INFO Training Epoch: [9/10] Step: [20 / 33]
+INFO Training Epoch: [9/10] Step: [30 / 33]
