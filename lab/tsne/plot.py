@@ -105,7 +105,7 @@ for i, dataset_class in enumerate(dataset_class_list):
         split = None
     dataset = dataset_class.SimpleDataset(
         transform, split=split)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=64,
+    loader = torch.utils.data.DataLoader(dataset, batch_size=256,
                                          num_workers=0,
                                          shuffle=True, drop_last=True)
     dataloader_list.append(loader)
