@@ -8,7 +8,7 @@ from seaborn.palettes import color_palette
 
 # import seaborn as sns
 import torch
-
+import os
 
 import models
 from datasets import (Chest_few_shot, CropDisease_few_shot, EuroSAT_few_shot,
@@ -47,6 +47,39 @@ def load_checkpoint2(model, load_path, device):
 
     return sd['epoch']
 
+def get_logs_path(method, target = ''):
+    root = './logs'
+    method_path = root + '/' + method
+    if os.path.isdir(method_path) == False:
+        print('The methode {}\'s  path doesn\'t exist'.format(method))
+    if target == '':
+        return method_path
+    log_path = method_path + '/' + target    
+    return log_path
+
+def tsne_method(method, dataloader_list, ax):
+    model = models.ResNet10()
+    load_checkpoint2(
+        model, get_logs_path(method) + '/checkpoint_best.pkl', device)
+    model.eval()
+    
+    label_dataset = []
+    feature_list = []
+    with torch.no_grad():
+        for i, loader in enumerate(dataloader_list):
+            # loader_iter = iter(loader)
+            # x, _ = loader_iter.next()        
+            for x, _ in loader:            
+                feature_list += model(x)            
+                label_dataset += [dataset_names_list[i]]*len(x)
+                break
+
+        feature_list = torch.stack(feature_list)
+        base_embedding = TSNE().fit(feature_list.numpy())        
+        color = sns.color_palette(n_colors=len(dataloader_list))
+        sns.kdeplot(x=base_embedding[:, 0], y=base_embedding[:, 1],
+                    hue=label_dataset, ax=ax, palette=color).set(title=method)
+
 
 if torch.cuda.is_available():
     dev = "cuda:0"
@@ -54,14 +87,11 @@ else:
     dev = "cpu"
 device = torch.device(dev)
 
-dataset_class_list = [miniImageNet_few_shot, EuroSAT_few_shot,
-                      CropDisease_few_shot, Chest_few_shot, ISIC_few_shot]
+
+
+dataset_class_list = [miniImageNet_few_shot, EuroSAT_few_shot, CropDisease_few_shot, Chest_few_shot, ISIC_few_shot]
 dataset_names_list = ['miniImageNet', 'EuroSAT',
                       'CropDisease', 'ChestX', 'ISIC']
-
-# dataset_class_list = [miniImageNet_few_shot,
-#                       EuroSAT_few_shot, CropDisease_few_shot]
-# dataset_names_list = ['miniImageNet', 'EuroSAT',  'CropDisease']
 
 dataloader_list = []
 for i, dataset_class in enumerate(dataset_class_list):
@@ -75,55 +105,14 @@ for i, dataset_class in enumerate(dataset_class_list):
         split = None
     dataset = dataset_class.SimpleDataset(
         transform, split=split)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=256,
+    loader = torch.utils.data.DataLoader(dataset, batch_size=64,
                                          num_workers=0,
                                          shuffle=True, drop_last=True)
     dataloader_list.append(loader)
 
-vanilla_models = []
-baseline_model = models.ResNet10()
-load_checkpoint(
-    baseline_model, 'logs/AdaBN/teacher_miniImageNet/399.tar', device)
-baseline_model.eval()
-vanilla_models.append(baseline_model)
 
-for name in dataset_names_list[1:]:
-    vanilla_models.append(models.ResNet10())
-    load_checkpoint2(vanilla_models[-1],
-                     'logs/baseline/{0}/checkpoint_best.pkl'.format(name), device)
-    vanilla_models[-1].eval()
+fig, ax = plt.subplots(1,2)
+tsne_method(method='baseline', dataloader_list=dataloader_list, ax=ax[0])
+tsne_method(method='baseline_na', dataloader_list=dataloader_list,ax=ax[1])
 
-
-label_dataset = []
-base_features = []
-bms_feature = []
-with torch.no_grad():
-    for i, loader in enumerate(dataloader_list):
-        # loader_iter = iter(loader)
-        # x, _ = loader_iter.next()
-        for x, _ in loader:
-            base_features += baseline_model(x)
-            bms_feature += vanilla_models[i](x)
-            label_dataset += [dataset_names_list[i]]*len(x)
-            # break
-
-    base_features = torch.stack(base_features)
-    bms_feature = torch.stack(bms_feature)
-
-    for listitem in label_dataset:
-        currentPlace = listitem[:-1]
-        label_dataset.append(currentPlace)
-    
-    label_dataset = []
-    
-    base_embedding = TSNE().fit(base_features.numpy())
-    bms_embedding = TSNE().fit(bms_feature.numpy())
-    fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-    color = sns.color_palette(n_colors=5)
-    sns.kdeplot(x=base_embedding[:, 0], y=base_embedding[:, 1],
-                hue=label_dataset, ax=ax[0], palette=color).set(title='baseline')
-    sns.kdeplot(x=bms_embedding[:, 0], y=bms_embedding[:, 1],
-                hue=label_dataset, ax=ax[1], palette=color).set(title='BMS')
-    plt.savefig("t-sne_kde.pdf")
-
-    plt.show()
+plt.savefig('./lab/tsne/tsne_methode.pdf')
