@@ -1,5 +1,11 @@
 from collections import OrderedDict
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+import torch
+from openTSNE import TSNE
+from seaborn.palettes import color_palette
+
 # import seaborn as sns
 import torch
 
@@ -104,8 +110,25 @@ with torch.no_grad():
     base_features = torch.stack(base_features)
     bms_feature = torch.stack(bms_feature)
 
-    torch.save(base_features, './lab/tsne/t-sne_base_features.pt')
-    torch.save(bms_feature, './lab/tsne/t-sne_bms_feature.pt')
-    with open('./lab/tsne/t-sne_label_dataset.txt', 'w') as filehandle:
-        for listitem in label_dataset:
-            filehandle.write('%s\n' % listitem)
+    for listitem in label_dataset:
+        currentPlace = listitem[:-1]
+        label_dataset.append(currentPlace)
+    
+    label_dataset = []
+    
+    base_embedding = TSNE().fit(base_features.numpy())
+    bms_embedding = TSNE().fit(bms_feature.numpy())
+    fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+    color = sns.color_palette(n_colors=5)
+    sns.kdeplot(x=base_embedding[:, 0], y=base_embedding[:, 1],
+                hue=label_dataset, ax=ax[0], palette=color).set(title='baseline')
+    sns.kdeplot(x=bms_embedding[:, 0], y=bms_embedding[:, 1],
+                hue=label_dataset, ax=ax[1], palette=color).set(title='BMS')
+    plt.savefig("t-sne_kde.pdf")
+
+    plt.show()
+
+    
+    
+    
+    

@@ -1,8 +1,8 @@
 # from lab.tsne import generate_features
 # from lab.affines import plot
-from lab.layers import plot
+# from lab.layers import plot
 # from lab.learning_curve import plot
-# from lab.tsne import plot
+from lab.tsne import plot
 
 # import os
 # dir_list = [o for o in os.listdir('D:/downloaded_DS/miniImagenet') 
