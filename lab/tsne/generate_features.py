@@ -1,13 +1,7 @@
 from collections import OrderedDict
 
-import matplotlib.pyplot as plt
-import seaborn as sns
 import torch
-from sklearn.manifold import TSNE
-from seaborn.palettes import color_palette
-import numpy as np
 
-# import seaborn as sns
 import torch
 import os
 
@@ -58,7 +52,7 @@ def get_logs_path(method, target = ''):
     log_path = method_path + '/' + target    
     return log_path
 
-def tsne_method(method, dataloader_list, ax, perplexity):
+def tsne_method(method, dataloader_list, ax):
     model = models.ResNet10()
     load_checkpoint2(
         model, get_logs_path(method) + '/checkpoint_best.pkl', device)
@@ -75,9 +69,8 @@ def tsne_method(method, dataloader_list, ax, perplexity):
                 label_dataset += [dataset_names_list[i]]*len(x)
                 # break
 
-        feature_list = torch.stack(feature_list).numpy()
-        base_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(feature_list)
-
+        feature_list = torch.stack(feature_list)
+        base_embedding = TSNE().fit(feature_list.numpy())        
         color = sns.color_palette(n_colors=len(dataloader_list))
         sns.kdeplot(x=base_embedding[:, 0], y=base_embedding[:, 1],
                     hue=label_dataset, ax=ax, palette=color).set(title=method)
@@ -112,13 +105,9 @@ for i, dataset_class in enumerate(dataset_class_list):
                                          shuffle=True, drop_last=True)
     dataloader_list.append(loader)
 
-perplexitys = range(0, 51, 1)
-for perplexity in perplexitys:
-    fig = plt.figure(figsize=(20, 10))
-    ax = fig.subplots(1,2)
-    tsne_method(method='baseline', dataloader_list=dataloader_list, ax=ax[0], perplexity=perplexity)
-    tsne_method(method='baseline_na', dataloader_list=dataloader_list,ax=ax[1], perplexity=perplexity)
+fig = plt.figure(figsize=(20, 10))
+ax = fig.subplots(1,2)
+tsne_method(method='baseline', dataloader_list=dataloader_list, ax=ax[0])
+tsne_method(method='baseline_na', dataloader_list=dataloader_list,ax=ax[1])
 
-    plt.savefig('./lab/tsne/tsne_methode_{0}.png'.format(perplexity))
-    plt.savefig('./lab/tsne/tsne_methode_{0}.svg'.format(perplexity))
-
+plt.savefig('./lab/tsne/tsne_methode.pdf')
