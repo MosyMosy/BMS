@@ -72,7 +72,7 @@ def tsne_method(method, dataloader_list, ax):
             for x, _ in loader:            
                 feature_list += model(x)            
                 label_dataset += [dataset_names_list[i]]*len(x)
-                break
+                # break
 
         feature_list = torch.stack(feature_list)
         base_embedding = TSNE().fit(feature_list.numpy())        
@@ -110,8 +110,8 @@ for i, dataset_class in enumerate(dataset_class_list):
                                          shuffle=True, drop_last=True)
     dataloader_list.append(loader)
 
-
-fig, ax = plt.subplots(1,2)
+fig = plt.figure(figsize=(20, 10))
+ax = fig.subplots(1,2)
 tsne_method(method='baseline', dataloader_list=dataloader_list, ax=ax[0])
 tsne_method(method='baseline_na', dataloader_list=dataloader_list,ax=ax[1])
 
