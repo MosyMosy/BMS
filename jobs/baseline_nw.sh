@@ -34,6 +34,26 @@ cd BMS
 cd data
 unzip -q $SLURM_TMPDIR/CD-FSL_Datasets/miniImagenet.zip
 
+mkdir ChestX-Ray8 EuroSAT ISIC2018 plant-disease
+
+cd EuroSAT
+unzip ~/scratch/CD-FSL_Datasets/EuroSAT.zip
+cd ..
+
+cd ChestX-Ray8
+unzip ~/scratch/CD-FSL_Datasets/ChestX-Ray8.zip
+mkdir images
+find . -type f -name '*.png' -print0 | xargs -0 mv -t images
+cd ..
+
+cd ISIC2018
+unzip ~/scratch/CD-FSL_Datasets/ISIC2018.zip
+unzip ~/scratch/CD-FSL_Datasets/ISIC2018_GroundTruth.zip
+cd ..
+
+cd plant-disease
+unzip ~/scratch/CD-FSL_Datasets/plant-disease.zip
+
 echo "----------------------------------< End of data preparation>--------------------------------"
 date +"%T"
 echo "--------------------------------------------------------------------------------------------"
@@ -44,9 +64,6 @@ cd $SLURM_TMPDIR
 cd BMS
 
 # python baseline_nw.py --dir ./logs/baseline_nw --bsize 128 --epochs 1000 --model resnet10
-
-cd $SLURM_TMPDIR
-cd BMS
 
 python finetune.py --save_dir ./logs/baseline_nw/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/baseline_nw/checkpoint_best.pkl --freeze_backbone &
 python finetune.py --save_dir ./logs/baseline_nw/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/baseline_nw/checkpoint_best.pkl --freeze_backbone &
