@@ -41,10 +41,12 @@ echo "--------------------------------------------------------------------------
 echo "---------------------------------------<Run the program>------------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-
 cd BMS
 
-python baseline_nb.py --dir ./logs/baseline_nb --bsize 128 --epochs 1000 --model resnet10
+# python baseline_nb.py --dir ./logs/baseline_nb --bsize 128 --epochs 1000 --model resnet10
+
+cd $SLURM_TMPDIR
+cd BMS
 
 python finetune.py --save_dir ./logs/baseline_nb/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/baseline_nb/checkpoint_best.pkl --freeze_backbone &
 python finetune.py --save_dir ./logs/baseline_nb/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/baseline_nb/checkpoint_best.pkl --freeze_backbone &
