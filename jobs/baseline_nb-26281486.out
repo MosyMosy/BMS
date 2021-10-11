@@ -1,0 +1,140 @@
+Mon Oct 11 05:01:53 2021       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 470.57.02    Driver Version: 470.57.02    CUDA Version: 11.4     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  Tesla V100-SXM2...  Off  | 00000000:1A:00.0 Off |                    0 |
+| N/A   36C    P0    39W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   1  Tesla V100-SXM2...  Off  | 00000000:1C:00.0 Off |                    0 |
+| N/A   33C    P0    39W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   2  Tesla V100-SXM2...  Off  | 00000000:1D:00.0 Off |                    0 |
+| N/A   34C    P0    39W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   3  Tesla V100-SXM2...  Off  | 00000000:1E:00.0 Off |                    0 |
+| N/A   37C    P0    38W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+------------------------------------< Data preparation>----------------------------------
+Copying the source code
+05:01:53
+Copying the datasets
+05:08:50
+creating data directories
+05:10:10
+----------------------------------< End of data preparation>--------------------------------
+05:10:27
+--------------------------------------------------------------------------------------------
+---------------------------------------<Run the program>------------------------------------
+05:10:27
+CropDisease
+5-way 1-shot
+EuroSAT
+5-way 1-shot
+ISIC
+5-way 1-shot
+Traceback (most recent call last):
+  File "finetune.py", line 306, in <module>
+    main(params)
+  File "finetune.py", line 240, in main
+    novel_loader = datamgr.SetDataManager(params.image_size, n_eposide=params.n_episode,
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/CropDisease_few_shot.py", line 183, in get_data_loader
+    dataset = SetDataset(self.batch_size, transform, split=self.split)
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/CropDisease_few_shot.py", line 74, in __init__
+    self.d = ImageFolder(configs.CropDisease_path , transform=transform)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torchvision/datasets/folder.py", line 253, in __init__
+    super(ImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torchvision/datasets/folder.py", line 126, in __init__
+    classes, class_to_idx = self._find_classes(self.root)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torchvision/datasets/folder.py", line 164, in _find_classes
+    classes = [d.name for d in os.scandir(dir) if d.is_dir()]
+FileNotFoundError: [Errno 2] No such file or directory: './data/plant-disease/dataset/train/'
+Traceback (most recent call last):
+  File "finetune.py", line 306, in <module>
+    main(params)
+  File "finetune.py", line 240, in main
+    novel_loader = datamgr.SetDataManager(params.image_size, n_eposide=params.n_episode,
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/EuroSAT_few_shot.py", line 175, in get_data_loader
+    dataset = SetDataset(self.batch_size, transform, split=self.split)
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/EuroSAT_few_shot.py", line 70, in __init__
+    self.d = ImageFolder(configs.EuroSAT_path, transform=transform)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torchvision/datasets/folder.py", line 253, in __init__
+    super(ImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torchvision/datasets/folder.py", line 126, in __init__
+    classes, class_to_idx = self._find_classes(self.root)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torchvision/datasets/folder.py", line 164, in _find_classes
+    classes = [d.name for d in os.scandir(dir) if d.is_dir()]
+FileNotFoundError: [Errno 2] No such file or directory: './data/EuroSAT/2750'
+Traceback (most recent call last):
+  File "finetune.py", line 306, in <module>
+    main(params)
+  File "finetune.py", line 240, in main
+    novel_loader = datamgr.SetDataManager(params.image_size, n_eposide=params.n_episode,
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/ISIC_few_shot.py", line 221, in get_data_loader
+    dataset = SetDataset(self.batch_size, transform, split=self.split)
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/ISIC_few_shot.py", line 102, in __init__
+    self.d = CustomDatasetFromImages(transform=self.transform, split=split)
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/ISIC_few_shot.py", line 42, in __init__
+    self.data_info = pd.read_csv(csv_path, skiprows=[0], header=None)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 610, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 462, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 819, in __init__
+    self._engine = self._make_engine(self.engine)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 1050, in _make_engine
+    return mapping[engine](self.f, **self.options)  # type: ignore[call-arg]
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 1867, in __init__
+    self._open_handles(src, kwds)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 1362, in _open_handles
+    self.handles = get_handle(
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/common.py", line 642, in get_handle
+    handle = open(
+FileNotFoundError: [Errno 2] No such file or directory: './data/ISIC2018/ISIC2018_Task3_Training_GroundTruth/ISIC2018_Task3_Training_GroundTruth.csv'
+ChestX
+5-way 1-shot
+Traceback (most recent call last):
+  File "finetune.py", line 306, in <module>
+    main(params)
+  File "finetune.py", line 240, in main
+    novel_loader = datamgr.SetDataManager(params.image_size, n_eposide=params.n_episode,
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/Chest_few_shot.py", line 240, in get_data_loader
+    dataset = SetDataset(self.batch_size, transform, self.split)
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/Chest_few_shot.py", line 122, in __init__
+    self.d = CustomDatasetFromImages(transform=self.transform, split=split)
+  File "/localscratch/mosymosy.26281486.0/BMS/datasets/Chest_few_shot.py", line 47, in __init__
+    self.data_info = pd.read_csv(csv_path, skiprows=[0], header=None)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 610, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 462, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 819, in __init__
+    self._engine = self._make_engine(self.engine)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 1050, in _make_engine
+    return mapping[engine](self.f, **self.options)  # type: ignore[call-arg]
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 1867, in __init__
+    self._open_handles(src, kwds)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/parsers.py", line 1362, in _open_handles
+    self.handles = get_handle(
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/pandas/io/common.py", line 642, in get_handle
+    handle = open(
+FileNotFoundError: [Errno 2] No such file or directory: './data/ChestX-Ray8/Data_Entry_2017.csv'
+-----------------------------------<End of run the program>---------------------------------
+05:10:36
+--------------------------------------<backup the result>-----------------------------------
+05:10:36
