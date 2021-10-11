@@ -58,12 +58,11 @@ def get_logs_path(method, target = ''):
     log_path = method_path + '/' + target    
     return log_path
 
-def tsne_method(method, dataloader_list, ax, perplexity):
+def get_feature_list(method, dataloader_list, dataset_names_list):
     model = models.ResNet10()
     load_checkpoint2(
         model, get_logs_path(method) + '/checkpoint_best.pkl', device)
     model.eval()
-    
     label_dataset = []
     feature_list = []
     with torch.no_grad():
@@ -74,13 +73,7 @@ def tsne_method(method, dataloader_list, ax, perplexity):
                 feature_list += model(x)            
                 label_dataset += [dataset_names_list[i]]*len(x)
                 # break
-
-        feature_list = torch.stack(feature_list).numpy()
-        base_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(feature_list)
-
-        color = sns.color_palette(n_colors=len(dataloader_list))
-        sns.kdeplot(x=base_embedding[:, 0], y=base_embedding[:, 1],
-                    hue=label_dataset, ax=ax, palette=color).set(title=method)
+    return torch.stack(feature_list).numpy(), label_dataset
 
 
 if torch.cuda.is_available():
@@ -112,13 +105,24 @@ for i, dataset_class in enumerate(dataset_class_list):
                                          shuffle=True, drop_last=True)
     dataloader_list.append(loader)
 
+baseline_features, labels = get_feature_list('baseline', dataloader_list, dataset_names_list)
+baseline_na_features, labels = get_feature_list('baseline_na', dataloader_list, dataset_names_list)
+color = sns.color_palette(n_colors=len(dataloader_list))
 perplexitys = range(0, 51, 1)
 for perplexity in perplexitys:
     fig = plt.figure(figsize=(20, 10))
-    ax = fig.subplots(1,2)
-    tsne_method(method='baseline', dataloader_list=dataloader_list, ax=ax[0], perplexity=perplexity)
-    tsne_method(method='baseline_na', dataloader_list=dataloader_list,ax=ax[1], perplexity=perplexity)
-
-    plt.savefig('./lab/tsne/tsne_methode_{0}.png'.format(perplexity))
-    plt.savefig('./lab/tsne/tsne_methode_{0}.svg'.format(perplexity))
-
+    ax = fig.subplots(1,2)    
+    
+    baseline_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(baseline_features)    
+    sns.kdeplot(x=baseline_embedding[:, 0], y=baseline_embedding[:, 1],
+                hue=labels, ax=ax[0], palette=color)
+    
+    baseline_na_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(baseline_features)    
+    sns.kdeplot(x=baseline_na_embedding[:, 0], y=baseline_na_embedding[:, 1],
+                hue=labels, ax=ax[1], palette=color)
+    title = 'Left baseline, Right baseline_na. Perplexity {0}'.format(perplexity)
+    fig.suptitle(title)
+    
+    plt.savefig('./lab/tsne/{0}.png'.format(title))
+    plt.savefig('./lab/tsne/{0}.svg'.format(title))
+    print(title)
