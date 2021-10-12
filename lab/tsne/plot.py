@@ -94,10 +94,10 @@ for i, dataset_class in enumerate(dataset_class_list):
         224).get_composed_transform(aug=True)
     transform_test = dataset_class.TransformLoader(
         224).get_composed_transform(aug=False)
-    split = 'datasets/split_seed_1/{0}_unlabeled_20.csv'.format(
-        dataset_names_list[i])
-    if dataset_names_list[i] == 'miniImageNet':
-        split = None
+    # split = 'datasets/split_seed_1/{0}_labeled_20.csv'.format(
+    #     dataset_names_list[i])
+    # if dataset_names_list[i] == 'miniImageNet':
+    split = None
     dataset = dataset_class.SimpleDataset(
         transform, split=split)
     loader = torch.utils.data.DataLoader(dataset, batch_size=256,
