@@ -23,7 +23,7 @@ model_names = sorted(name for name in models.__dict__
     and callable(models.__dict__[name]))
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-parser.add_argument('data', metavar='DIR',
+parser.add_argument('--data', metavar='data_DIR',
                     help='path to dataset')
 parser.add_argument('--dir', type=str, default='./logs/ImageNet/',
                         help='directory to save the checkpoints')
