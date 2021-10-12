@@ -117,7 +117,7 @@ for perplexity in perplexitys:
     sns.kdeplot(x=baseline_embedding[:, 0], y=baseline_embedding[:, 1],
                 hue=labels, ax=ax[0], palette=color)
     
-    baseline_na_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(baseline_features)    
+    baseline_na_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(baseline_na_features)    
     sns.kdeplot(x=baseline_na_embedding[:, 0], y=baseline_na_embedding[:, 1],
                 hue=labels, ax=ax[1], palette=color)
     title = 'Left baseline, Right baseline_na. Perplexity {0}'.format(perplexity)
