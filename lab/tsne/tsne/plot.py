@@ -94,10 +94,10 @@ for i, dataset_class in enumerate(dataset_class_list):
         224).get_composed_transform(aug=True)
     transform_test = dataset_class.TransformLoader(
         224).get_composed_transform(aug=False)
-    # split = 'datasets/split_seed_1/{0}_labeled_20.csv'.format(
-    #     dataset_names_list[i])
-    # if dataset_names_list[i] == 'miniImageNet':
-    split = None
+    split = 'datasets/split_seed_1/{0}_unlabeled_20.csv'.format(
+        dataset_names_list[i])
+    if dataset_names_list[i] == 'miniImageNet':
+        split = None
     dataset = dataset_class.SimpleDataset(
         transform, split=split)
     loader = torch.utils.data.DataLoader(dataset, batch_size=256,
@@ -117,7 +117,7 @@ for perplexity in perplexitys:
     sns.kdeplot(x=baseline_embedding[:, 0], y=baseline_embedding[:, 1],
                 hue=labels, ax=ax[0], palette=color)
     
-    baseline_na_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(baseline_na_features)    
+    baseline_na_embedding = TSNE(perplexity=perplexity, n_iter=5000, learning_rate=10).fit_transform(baseline_features)    
     sns.kdeplot(x=baseline_na_embedding[:, 0], y=baseline_na_embedding[:, 1],
                 hue=labels, ax=ax[1], palette=color)
     title = 'Left baseline, Right baseline_na. Perplexity {0}'.format(perplexity)
