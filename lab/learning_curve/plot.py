@@ -78,20 +78,20 @@ def compare_methodes(method1,method2, target1, target2):
     df['method1_train_loss'] = df_method1_train['Loss']
     df['method2_train_loss'] = df_method2_train['Loss']
     df.plot( y=["method1_train_loss", 'method2_train_loss'])
-    plt.axvline(x=354, color='blue')
-    plt.axvline(x=332, color='orange')
+    plt.axvline(x=332, color='blue')
+    plt.axvline(x=402, color='orange')
     
     df['method1_val_loss'] = df_method1_val['Loss_test']
     df['method2_val_loss'] = df_method2_val['Loss_test']
     df.plot( y=["method1_val_loss", 'method2_val_loss'])
-    plt.axvline(x=354, color='blue')
-    plt.axvline(x=332, color='orange')
+    plt.axvline(x=332, color='blue')
+    plt.axvline(x=402, color='orange')
     
-    df['method1_val_top1'] = df_method1_val['top1_base_test']
-    df['method2_val_top1'] = df_method2_val['top1_base_test']
-    df.plot( y=["method1_val_top1", 'method2_val_top1'])
-    plt.axvline(x=354, color='blue')
-    plt.axvline(x=332, color='orange')
+    df['{}_val_top1'.format(method1)] = df_method1_val['top1_base_test']
+    df['{}_val_top1'.format(method2)] = df_method2_val['top1_base_test']
+    df.plot( y=['{}_val_top1'.format(method1), '{}_val_top1'.format(method2)])
+    plt.axvline(x=332, color='blue')
+    plt.axvline(x=402, color='orange')
     
     plt.show()
 
@@ -130,4 +130,6 @@ def STARTUP_losses(method1, target1):
 # plot_all()
 
 # plot_all()
-STARTUP_losses('STARTUP', 'EuroSAT')
+# STARTUP_losses('STARTUP', 'EuroSAT')
+
+compare_methodes('baseline_na', 'baseline_nb', "", "")
