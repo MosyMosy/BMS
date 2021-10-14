@@ -27,14 +27,14 @@ cp -r ~/scratch/BMS .
 echo "Copying the datasets"
 date +"%T"
 cp -r ~/scratch/CD-FSL_Datasets .
-cp ~/scratch/imagenet_object_localization_patched2019.tar.gz .
+# cp ~/scratch/imagenet_object_localization_patched2019.tar.gz .
 
 echo "creating data directories"
 date +"%T"
 cd BMS
 cd data
-tar -xvzf $SLURM_TMPDIR/imagenet_object_localization_patched2019.tar.gz
-unzip -q $SLURM_TMPDIR/CD-FSL_Datasets/ILSVRC_val.zip
+# tar -xvzf $SLURM_TMPDIR/imagenet_object_localization_patched2019.tar.gz
+# unzip -q $SLURM_TMPDIR/CD-FSL_Datasets/ILSVRC_val.zip
 
 mkdir ChestX-Ray8 EuroSAT ISIC2018 plant-disease
 
@@ -65,7 +65,7 @@ date +"%T"
 cd $SLURM_TMPDIR
 cd BMS
 
-python ImageNet_na.py --dir ./logs/ImageNet_na/ --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
+# python ImageNet_na.py --dir ./logs/ImageNet_na/ --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
 
 python finetune.py --save_dir ./logs/ImageNet_na/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/ImageNet_na/checkpoint_best.pkl --freeze_backbone &
 python finetune.py --save_dir ./logs/ImageNet_na/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/ImageNet_na/checkpoint_best.pkl --freeze_backbone &
