@@ -65,7 +65,7 @@ date +"%T"
 cd $SLURM_TMPDIR
 cd BMS
 
-python ImageNet_nb.py --dir ./logs/ImageNet_nb --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
+python ImageNet_nb.py --dir ./logs/ImageNet_nb/ --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
 
 python finetune.py --save_dir ./logs/ImageNet_nb/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/ImageNet_nb/checkpoint_best.pkl --freeze_backbone &
 python finetune.py --save_dir ./logs/ImageNet_nb/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/ImageNet_nb/checkpoint_best.pkl --freeze_backbone &
