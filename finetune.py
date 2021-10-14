@@ -52,7 +52,13 @@ def finetune(novel_loader, params, n_shot):
 
         if 'epoch' in sd:
             print("Model checkpointed at epoch: ", sd['epoch'])
-        sd = sd['model']
+        
+        if 'model' in sd:            
+            sd = sd['model']
+        elif 'state_dict' is sd:
+            sd = sd['state_dict']
+        else:
+            sd = sd
     # elif params.embedding_load_path_version == 3:
     #     state = torch.load(params.embedding_load_path)
     #     print("Model checkpointed at epoch: ", state['epoch'])
