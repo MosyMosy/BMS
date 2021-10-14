@@ -55,7 +55,7 @@ def finetune(novel_loader, params, n_shot):
         
         if 'model' in sd:            
             sd = sd['model']
-        elif 'state_dict' is sd:
+        elif 'state_dict' in sd:
             sd = sd['state_dict']
         else:
             sd = sd
