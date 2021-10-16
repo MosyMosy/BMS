@@ -357,6 +357,8 @@ def validate(val_loader, model, criterion, args):
 
 
 def save_checkpoint(state, is_best, args):
+    if not os.path.isdir(args.dir):
+        os.makedirs(args.dir)
     torch.save(state, args.dir + 'checkpoint.pkl')
     if is_best:
         shutil.copyfile( args.dir + 'checkpoint.pkl',  args.dir + 'checkpoint_best.pkl')
