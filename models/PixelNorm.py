@@ -39,7 +39,7 @@ class PixelNorm(nn.Module):
     def forward(self, input):
         if self.running_magnitude is None:
             self.running_magnitude = torch.ones((input[0]).size())
-            self.running_magnitude.cuda(0)
+            self.running_magnitude = self.running_magnitude.cuda(0)
         
         exponential_average_factor = 0.0
 
@@ -54,7 +54,7 @@ class PixelNorm(nn.Module):
         # calculate running estimates
         if self.training:
             magnitude =  torch.sqrt((input**2).mean([0]) + self.eps)
-            magnitude.cuda(0)
+            magnitude = magnitude.cuda(0)
             n = input.numel() / input.size(1)
             with torch.no_grad():
                 self.running_magnitude = exponential_average_factor * magnitude * n / (n - 1)\
