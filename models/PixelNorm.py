@@ -23,9 +23,10 @@ class PixelNorm(nn.Module):
         self.momentum = momentum
         self.track_running_stats = track_running_stats
         
-        if self.training:
-            self.register_buffer('running_magnitude', torch.ones(1, **self.factory_kwargs))
-        self.running_magnitude: Optional[Tensor]
+        # if self.training:
+        #     self.register_buffer('running_magnitude', torch.ones(1, **self.factory_kwargs))
+        if not self.training:
+            self.running_magnitude = None
         self.register_buffer('num_batches_tracked',
                                 torch.tensor(0, dtype=torch.long,
                                               **{k: v for k, v in self.factory_kwargs.items() if k != 'dtype'}))      
@@ -38,7 +39,8 @@ class PixelNorm(nn.Module):
             self.num_batches_tracked.zero_()  # type: ignore[union-attr,operator]
 
     def forward(self, input):
-        if len(self.running_magnitude) == 1:
+        if not hasattr(self, 'running_magnitude'):
+        # if self.running_magnitude is None:
             self.register_buffer('running_magnitude', torch.ones((input[0]).size(), **self.factory_kwargs))
             self.running_magnitude = torch.ones((input[0]).size())
             self.running_magnitude = self.running_magnitude.cuda(0)
