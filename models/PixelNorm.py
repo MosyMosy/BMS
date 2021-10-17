@@ -38,6 +38,7 @@ class PixelNorm(nn.Module):
 
     def forward(self, input):
         if len(self.running_magnitude) == 1:
+            self.register_buffer('running_magnitude', torch.ones((input[0]).size(), **self.factory_kwargs))
             self.running_magnitude = torch.ones((input[0]).size())
             self.running_magnitude = self.running_magnitude.cuda(0)
         
