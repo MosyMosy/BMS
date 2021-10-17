@@ -50,15 +50,15 @@ python ImageNet.py --resume ./logs/ImageNet/checkpoint_best.pkl --evaluate --arc
 echo "---------------------------------------------------------------------------"
 
 echo "---------------------------------------ImageNet_na------------------------------------"
-python ImageNet.py --resume ./logs/ImageNet_na/checkpoint_best.pkl --evaluate --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
+python ImageNet_na.py --resume ./logs/ImageNet_na/checkpoint_best.pkl --evaluate --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
 echo "---------------------------------------------------------------------------"
 
 echo "---------------------------------------ImageNet_nb------------------------------------"
-python ImageNet.py --resume ./logs/ImageNet_nb/checkpoint_best.pkl --evaluate --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
+python ImageNet_nb.py --resume ./logs/ImageNet_nb/checkpoint_best.pkl --evaluate --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
 echo "---------------------------------------------------------------------------"
 
 echo "---------------------------------------ImageNet_nw------------------------------------"
-python ImageNet.py --resume ./logs/ImageNet_nw/checkpoint_best.pkl --evaluate --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
+python ImageNet_nw.py --resume ./logs/ImageNet_nw/checkpoint_best.pkl --evaluate --arch resnet18 --data ./data/ILSVRC/Data/CLS-LOC --gpu 0
 echo "---------------------------------------------------------------------------"
 
 echo "-----------------------------------<End of run the program>---------------------------------"
