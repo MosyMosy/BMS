@@ -54,6 +54,7 @@ class PixelNorm(nn.Module):
         # calculate running estimates
         if self.training:
             magnitude =  torch.sqrt((input**2).mean([0]) + self.eps)
+            magnitude.cuda(0)
             n = input.numel() / input.size(1)
             with torch.no_grad():
                 self.running_magnitude = exponential_average_factor * magnitude * n / (n - 1)\
