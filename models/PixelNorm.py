@@ -23,7 +23,7 @@ class PixelNorm(nn.Module):
         self.momentum = momentum
         self.track_running_stats = track_running_stats
         
-        self.register_buffer('running_magnitude', torch.ones(1, **self.factory_kwargs))
+        # self.register_buffer('running_magnitude', torch.ones(1, **self.factory_kwargs))
         self.running_magnitude: Optional[Tensor]
         self.register_buffer('num_batches_tracked',
                                 torch.tensor(0, dtype=torch.long,
