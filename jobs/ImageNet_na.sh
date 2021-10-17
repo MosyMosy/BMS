@@ -33,28 +33,28 @@ echo "creating data directories"
 date +"%T"
 cd BMS
 cd data
-tar -xvzf $SLURM_TMPDIR/imagenet_object_localization_patched2019.tar.gz
+tar -xzf $SLURM_TMPDIR/imagenet_object_localization_patched2019.tar.gz
 unzip -q $SLURM_TMPDIR/CD-FSL_Datasets/ILSVRC_val.zip
 
 mkdir ChestX-Ray8 EuroSAT ISIC2018 plant-disease
 
 cd EuroSAT
-unzip ~/scratch/CD-FSL_Datasets/EuroSAT.zip
+unzip -q ~/scratch/CD-FSL_Datasets/EuroSAT.zip
 cd ..
 
 cd ChestX-Ray8
-unzip ~/scratch/CD-FSL_Datasets/ChestX-Ray8.zip
+unzip -q ~/scratch/CD-FSL_Datasets/ChestX-Ray8.zip
 mkdir images
 find . -type f -name '*.png' -print0 | xargs -0 mv -t images
 cd ..
 
 cd ISIC2018
-unzip ~/scratch/CD-FSL_Datasets/ISIC2018.zip
-unzip ~/scratch/CD-FSL_Datasets/ISIC2018_GroundTruth.zip
+unzip -q ~/scratch/CD-FSL_Datasets/ISIC2018.zip
+unzip -q ~/scratch/CD-FSL_Datasets/ISIC2018_GroundTruth.zip
 cd ..
 
 cd plant-disease
-unzip ~/scratch/CD-FSL_Datasets/plant-disease.zip
+unzip -q ~/scratch/CD-FSL_Datasets/plant-disease.zip
 
 echo "----------------------------------< End of data preparation>--------------------------------"
 date +"%T"
