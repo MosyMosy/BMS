@@ -38,7 +38,8 @@ class PixelNorm(nn.Module):
 
     def forward(self, input):
         if self.running_magnitude is None:
-            self.running_magnitude = torch.ones((input[0]).size(), **self.factory_kwargs)
+            self.running_magnitude = torch.ones((input[0]).size())
+            self.running_magnitude.cuda(0)
         
         exponential_average_factor = 0.0
 
