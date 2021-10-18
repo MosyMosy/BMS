@@ -1,0 +1,137 @@
+Sun Oct 17 02:02:02 2021       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 470.57.02    Driver Version: 470.57.02    CUDA Version: 11.4     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  Tesla V100-SXM2...  Off  | 00000000:1A:00.0 Off |                    0 |
+| N/A   36C    P0    37W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   1  Tesla V100-SXM2...  Off  | 00000000:1C:00.0 Off |                    0 |
+| N/A   33C    P0    37W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   2  Tesla V100-SXM2...  Off  | 00000000:1D:00.0 Off |                    0 |
+| N/A   31C    P0    42W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   3  Tesla V100-SXM2...  Off  | 00000000:1E:00.0 Off |                    0 |
+| N/A   35C    P0    39W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+------------------------------------< Data preparation>----------------------------------
+Copying the source code
+02:02:02
+Copying the datasets
+02:09:28
+creating data directories
+02:14:03
+----------------------------------< End of data preparation>--------------------------------
+02:34:40
+--------------------------------------------------------------------------------------------
+---------------------------------------<Run the program>------------------------------------
+02:34:40
+---------------------------------------ImageNet------------------------------------
+Use GPU: 0 for training
+=> creating model 'resnet18'
+=> loading checkpoint './logs/ImageNet/checkpoint_best.pkl'
+=> loaded checkpoint './logs/ImageNet/checkpoint_best.pkl' (epoch 88)
+ImageNet.py:96: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+Test: [  0/196]	Time  2.980 ( 2.980)	Loss 7.1214e-01 (7.1214e-01)	Acc@1  80.86 ( 80.86)	Acc@5  96.48 ( 96.48)
+Test: [ 10/196]	Time  0.073 ( 0.480)	Loss 1.1627e+00 (8.8528e-01)	Acc@1  66.80 ( 77.06)	Acc@5  89.84 ( 93.47)
+Test: [ 20/196]	Time  1.176 ( 0.440)	Loss 1.1005e+00 (9.0574e-01)	Acc@1  79.30 ( 77.03)	Acc@5  87.89 ( 92.89)
+Test: [ 30/196]	Time  0.094 ( 0.391)	Loss 8.9297e-01 (8.6093e-01)	Acc@1  77.73 ( 78.33)	Acc@5  94.14 ( 93.16)
+Test: [ 40/196]	Time  0.739 ( 0.383)	Loss 9.5126e-01 (9.0971e-01)	Acc@1  76.56 ( 76.63)	Acc@5  92.97 ( 93.10)
+Test: [ 50/196]	Time  0.073 ( 0.373)	Loss 5.5308e-01 (9.0081e-01)	Acc@1  85.94 ( 76.70)	Acc@5  97.66 ( 93.44)
+Test: [ 60/196]	Time  0.074 ( 0.366)	Loss 1.1574e+00 (9.0957e-01)	Acc@1  69.53 ( 76.31)	Acc@5  92.97 ( 93.54)
+Test: [ 70/196]	Time  0.074 ( 0.371)	Loss 9.0101e-01 (8.9440e-01)	Acc@1  75.00 ( 76.61)	Acc@5  94.92 ( 93.71)
+Test: [ 80/196]	Time  0.094 ( 0.364)	Loss 1.5959e+00 (9.1671e-01)	Acc@1  60.55 ( 76.18)	Acc@5  86.72 ( 93.38)
+Test: [ 90/196]	Time  0.074 ( 0.365)	Loss 2.1735e+00 (9.7881e-01)	Acc@1  50.78 ( 74.91)	Acc@5  77.34 ( 92.58)
+Test: [100/196]	Time  0.074 ( 0.357)	Loss 1.5478e+00 (1.0416e+00)	Acc@1  60.55 ( 73.60)	Acc@5  85.55 ( 91.79)
+Test: [110/196]	Time  0.074 ( 0.361)	Loss 1.0931e+00 (1.0648e+00)	Acc@1  72.66 ( 73.16)	Acc@5  90.23 ( 91.42)
+Test: [120/196]	Time  0.074 ( 0.354)	Loss 1.6921e+00 (1.0871e+00)	Acc@1  58.59 ( 72.82)	Acc@5  80.86 ( 91.11)
+Test: [130/196]	Time  0.073 ( 0.356)	Loss 9.0112e-01 (1.1237e+00)	Acc@1  80.47 ( 71.99)	Acc@5  94.92 ( 90.65)
+Test: [140/196]	Time  0.074 ( 0.350)	Loss 1.4372e+00 (1.1477e+00)	Acc@1  66.41 ( 71.47)	Acc@5  85.55 ( 90.35)
+Test: [150/196]	Time  0.269 ( 0.352)	Loss 1.5546e+00 (1.1734e+00)	Acc@1  68.75 ( 71.07)	Acc@5  82.81 ( 89.96)
+Test: [160/196]	Time  0.094 ( 0.349)	Loss 1.1235e+00 (1.1916e+00)	Acc@1  75.39 ( 70.81)	Acc@5  89.84 ( 89.67)
+Test: [170/196]	Time  0.161 ( 0.351)	Loss 8.4893e-01 (1.2130e+00)	Acc@1  76.95 ( 70.29)	Acc@5  95.70 ( 89.39)
+Test: [180/196]	Time  0.074 ( 0.347)	Loss 1.3127e+00 (1.2308e+00)	Acc@1  61.72 ( 69.86)	Acc@5  91.41 ( 89.14)
+Test: [190/196]	Time  0.093 ( 0.349)	Loss 1.3012e+00 (1.2282e+00)	Acc@1  64.45 ( 69.84)	Acc@5  91.41 ( 89.18)
+ * Acc@1 70.014 Acc@5 89.260
+---------------------------------------------------------------------------
+---------------------------------------ImageNet_na------------------------------------
+ImageNet.py:96: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+Use GPU: 0 for training
+=> creating model 'resnet18'
+=> loading checkpoint './logs/ImageNet_na/checkpoint_best.pkl'
+Traceback (most recent call last):
+  File "ImageNet.py", line 433, in <module>
+    main()
+  File "ImageNet.py", line 114, in main
+    main_worker(args.gpu, ngpus_per_node, args)
+  File "ImageNet.py", line 195, in main_worker
+    optimizer.load_state_dict(checkpoint['optimizer'])
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/optim/optimizer.py", line 146, in load_state_dict
+    raise ValueError("loaded state dict contains a parameter group "
+ValueError: loaded state dict contains a parameter group that doesn't match the size of optimizer's group
+---------------------------------------------------------------------------
+---------------------------------------ImageNet_nb------------------------------------
+ImageNet.py:96: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+Use GPU: 0 for training
+=> creating model 'resnet18'
+=> loading checkpoint './logs/ImageNet_nb/checkpoint_best.pkl'
+Traceback (most recent call last):
+  File "ImageNet.py", line 433, in <module>
+    main()
+  File "ImageNet.py", line 114, in main
+    main_worker(args.gpu, ngpus_per_node, args)
+  File "ImageNet.py", line 195, in main_worker
+    optimizer.load_state_dict(checkpoint['optimizer'])
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/optim/optimizer.py", line 146, in load_state_dict
+    raise ValueError("loaded state dict contains a parameter group "
+ValueError: loaded state dict contains a parameter group that doesn't match the size of optimizer's group
+---------------------------------------------------------------------------
+---------------------------------------ImageNet_nw------------------------------------
+Use GPU: 0 for training
+=> creating model 'resnet18'
+=> no checkpoint found at './logs/ImageNet_nw/checkpoint_best.pkl'
+ImageNet.py:96: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+Test: [  0/196]	Time  2.695 ( 2.695)	Loss 7.8031e+00 (7.8031e+00)	Acc@1   0.00 (  0.00)	Acc@5   0.00 (  0.00)
+Test: [ 10/196]	Time  0.074 ( 0.452)	Loss 7.6509e+00 (7.4856e+00)	Acc@1   0.00 (  0.00)	Acc@5   0.00 (  0.00)
+Test: [ 20/196]	Time  1.049 ( 0.418)	Loss 7.6446e+00 (7.5297e+00)	Acc@1   0.00 (  0.91)	Acc@5   0.00 (  1.12)
+Test: [ 30/196]	Time  0.074 ( 0.380)	Loss 6.7039e+00 (7.4746e+00)	Acc@1   0.00 (  0.62)	Acc@5   0.00 (  1.55)
+Test: [ 40/196]	Time  0.894 ( 0.380)	Loss 7.4776e+00 (7.4574e+00)	Acc@1   0.00 (  0.47)	Acc@5   0.00 (  1.17)
+Test: [ 50/196]	Time  0.074 ( 0.366)	Loss 7.5733e+00 (7.4620e+00)	Acc@1   0.00 (  0.38)	Acc@5   0.00 (  0.94)
+Test: [ 60/196]	Time  0.564 ( 0.368)	Loss 6.9414e+00 (7.4207e+00)	Acc@1   0.00 (  0.31)	Acc@5   0.00 (  0.79)
+Test: [ 70/196]	Time  0.074 ( 0.364)	Loss 7.5685e+00 (7.4198e+00)	Acc@1   0.00 (  0.27)	Acc@5   0.00 (  1.19)
+Test: [ 80/196]	Time  0.776 ( 0.365)	Loss 7.3833e+00 (7.4132e+00)	Acc@1   0.00 (  0.24)	Acc@5   0.00 (  1.04)
+Test: [ 90/196]	Time  0.074 ( 0.358)	Loss 6.9022e+00 (7.4271e+00)	Acc@1   0.00 (  0.21)	Acc@5   0.00 (  0.93)
+Test: [100/196]	Time  0.558 ( 0.355)	Loss 7.7040e+00 (7.4322e+00)	Acc@1   0.00 (  0.19)	Acc@5   0.00 (  0.84)
+Test: [110/196]	Time  0.096 ( 0.353)	Loss 8.2375e+00 (7.4567e+00)	Acc@1   0.00 (  0.17)	Acc@5   0.00 (  0.76)
+Test: [120/196]	Time  0.658 ( 0.353)	Loss 7.2268e+00 (7.4608e+00)	Acc@1   0.00 (  0.16)	Acc@5   0.00 (  0.86)
+Test: [130/196]	Time  0.678 ( 0.352)	Loss 7.6710e+00 (7.4708e+00)	Acc@1   0.00 (  0.15)	Acc@5   0.00 (  0.79)
+Test: [140/196]	Time  0.074 ( 0.350)	Loss 7.9270e+00 (7.4689e+00)	Acc@1   0.00 (  0.14)	Acc@5   0.00 (  0.74)
+Test: [150/196]	Time  1.094 ( 0.351)	Loss 7.3945e+00 (7.4782e+00)	Acc@1   0.00 (  0.13)	Acc@5   0.39 (  0.70)
+Test: [160/196]	Time  0.074 ( 0.348)	Loss 7.3342e+00 (7.4862e+00)	Acc@1   0.00 (  0.12)	Acc@5   0.00 (  0.66)
+Test: [170/196]	Time  1.113 ( 0.350)	Loss 8.2028e+00 (7.4956e+00)	Acc@1   0.00 (  0.11)	Acc@5   0.00 (  0.62)
+Test: [180/196]	Time  0.074 ( 0.346)	Loss 7.3929e+00 (7.5105e+00)	Acc@1   0.00 (  0.11)	Acc@5   0.00 (  0.58)
+Test: [190/196]	Time  1.207 ( 0.348)	Loss 8.2818e+00 (7.5114e+00)	Acc@1   0.00 (  0.10)	Acc@5   0.00 (  0.55)
+ * Acc@1 0.098 Acc@5 0.540
+---------------------------------------------------------------------------
+-----------------------------------<End of run the program>---------------------------------
+02:37:43
