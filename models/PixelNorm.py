@@ -6,11 +6,12 @@ import torch
 from torch import Tensor
 import torch.nn as nn
 
-from typing import Optional, Any
+from typing import Type, Any, Callable, Union, List, Optional
 
 class PixelNorm(nn.Module):
     def __init__(
         self,
+        feature_sizes:List[int],
         eps: float = 1e-5,
         momentum: float = 0.1,
         track_running_stats: bool = True,
@@ -23,10 +24,8 @@ class PixelNorm(nn.Module):
         self.momentum = momentum
         self.track_running_stats = track_running_stats
         
-        if self.training:
-            self.register_buffer('running_magnitude', None)   
-        else:             
-            self.running_magnitude: Optional[Tensor]
+        self.register_buffer('running_magnitude', torch.ones(feature_sizes[0], feature_sizes[1], feature_sizes[1], **self.factory_kwargs))
+        self.running_magnitude: Optional[Tensor]
         self.register_buffer('num_batches_tracked',
                                 torch.tensor(0, dtype=torch.long,
                                               **{k: v for k, v in self.factory_kwargs.items() if k != 'dtype'}))      
@@ -39,10 +38,6 @@ class PixelNorm(nn.Module):
             self.num_batches_tracked.zero_()  # type: ignore[union-attr,operator]
 
     def forward(self, input):
-        if self.running_magnitude is None:
-            self.register_buffer('running_magnitude', torch.ones((input[0]).size(), **self.factory_kwargs))
-            self.running_magnitude = torch.ones((input[0]).size())
-            self.running_magnitude = self.running_magnitude.cuda(0)
         
         exponential_average_factor = 0.0
 
@@ -57,7 +52,6 @@ class PixelNorm(nn.Module):
         # calculate running estimates
         if self.training:
             magnitude =  torch.sqrt((input**2).mean([0]) + self.eps)
-            magnitude = magnitude.cuda(0)
             n = input.numel() / input.size(1)
             with torch.no_grad():
                 self.running_magnitude = exponential_average_factor * magnitude * n / (n - 1)\
