@@ -127,9 +127,27 @@ def STARTUP_losses(method1, target1):
     
     plt.show()
     
+    
+def compare_ImageNets(methode_list):
+    root = './logs'
+    df = pd.DataFrame()
+    for methode in methode_list:
+        method_path = get_logs_path(methode, "")    
+        method_check = method_path + '/' + 'checkpoint_best.pkl' 
+        df_method = pd.read_csv(method_path + '/log.csv')    
+        df[methode + ' Top1_Acc'] = df_method['Acc@1']
+    
+        # plt.axvline(x=332, color='blue')
+
+    df.plot()
+    plt.show()
+
+
 # plot_all()
 
 # plot_all()
 # STARTUP_losses('STARTUP', 'EuroSAT')
 
-compare_methodes('baseline_na', 'baseline_nb', "", "")
+# compare_methodes('baseline_na', 'baseline_nb', "", "")
+
+compare_ImageNets(['ImageNet','ImageNet_na','ImageNet_nb','ImageNet_nw', 'ImageNet_na_PN'])

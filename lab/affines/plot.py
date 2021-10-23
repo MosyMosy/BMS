@@ -103,6 +103,57 @@ def get_BN_output(model, colors, layers=None, param = 'weight'):
 
     return BN_list, labels, ListedColormap(newcolors, name='custom')
 
+def get_conv_affine(model, colors, layers=None, param = 'weight'):
+    newcolors = []
+    labels = []
+    BN_list = []
+    if layers is None:
+        flatten = True
+    else: 
+        flatten = False
+
+    i = 0
+    for layer in model.modules():
+        if isinstance(layer, nn.Conv2d):
+            if (layers is None) or (i in layers):
+                flat_list = []
+                if param == 'weight':
+                    flat_list = layer.weight.tolist()
+                else:
+                    flat_list = layer.bias.tolist()
+
+                # for channel in out:
+                #     if flatten:
+                #         flat_list += [channel]
+                #     else:
+                #         flat_list.append(channel)
+
+                if flatten:
+                    BN_list.append(flat_list)
+                    labels += ['Layer {0:02d} ({1: 0.2f}, {2: 0.2f})'.format(
+                        i+1, statistics.mean(flat_list), statistics.stdev(flat_list))]
+                else:
+                    BN_list += flat_list
+                    labels += ['Layer {0:02d}'.format(i+1)]
+                    labels += [None]*(len(out)-1)
+
+                    clm = LinearSegmentedColormap.from_list(
+                        "Custom", colors, N=len(out))
+                    temp = clm(range(0, len(out)))
+                    for c in temp:
+                        newcolors.append(c)
+
+            i += 1
+    if flatten:
+        clm = LinearSegmentedColormap.from_list(
+            "Custom", colors, N=i)
+        temp = clm(range(0, i))
+        for c in temp:
+            newcolors.append(c)
+
+    return BN_list, labels, ListedColormap(newcolors, name='custom')
+
+
 
 def to_grid(path_list, out = "lab/layers/grid.png"):
     
@@ -140,11 +191,11 @@ l = None
 path_list = []
 for i, model in enumerate(models):
         with torch.no_grad():
-            weight_out, weight_labels, clm = get_BN_output(
+            weight_out, weight_labels, clm = get_conv_affine(
                 model, colors=colors[i], layers=l, param='weight')
             
-            bias_out, bias_labels, clm = get_BN_output(
-                model, colors=colors[i], layers=l, param = 'bias')
+            # bias_out, bias_labels, clm = get_BN_output(
+            #     model, colors=colors[i], layers=l, param = 'bias')
             
             args = {'overlap': 4, 'bw_method': 0.2,
                     'colormap': clm, 'linewidth': 0.3, 'linecolor': 'w',
@@ -157,10 +208,10 @@ for i, model in enumerate(models):
                 "./lab/affines/weight_{0}.png".format(model_names[i]))
             plt.savefig(path_list[-1],)
 
-            joypy.joyplot(list(reversed(bias_out)), labels= list(reversed(bias_labels)), **args)
-            # plt.show()
-            path_list.append(
-                "./lab/affines/bias_{0}.png".format(model_names[i]))
-            plt.savefig(path_list[-1],)
-        to_grid(path_list, out = "lab/affines/grid_affine_all.png")
+            # joypy.joyplot(list(reversed(bias_out)), labels= list(reversed(bias_labels)), **args)
+            # # plt.show()
+            # path_list.append(
+            #     "./lab/affines/bias_{0}.png".format(model_names[i]))
+            # plt.savefig(path_list[-1],)
+        # to_grid(path_list, out = "lab/affines/grid_affine_all.png")
     # plt.cla()
