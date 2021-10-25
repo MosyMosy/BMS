@@ -79,7 +79,7 @@ def finetune(novel_loader, params, n_shot):
         raise ValueError("Invalid load path version!")
 
     if params.model == 'resnet18':
-        pretrained_model_template = resnet18      
+        pretrained_model_template = resnet18()     
         feature_dim = 512
     else:
         raise ValueError("Invalid model!")
