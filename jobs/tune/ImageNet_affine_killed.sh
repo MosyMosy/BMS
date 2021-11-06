@@ -63,11 +63,11 @@ cd $SLURM_TMPDIR
 cd BMS
 
 
-python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/resnet18-f37072fd.pkl --freeze_backbone &
-python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/resnet18-f37072fd.pkl --freeze_backbone &
-python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/resnet18-f37072fd.pkl --freeze_backbone &
+python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/checkpoint_best.pkl --freeze_backbone &
+python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/checkpoint_best.pkl --freeze_backbone &
+python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/checkpoint_best.pkl --freeze_backbone &
 wait
-python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/resnet18-f37072fd.pkl --freeze_backbone
+python ImageNet_finetune.py --save_dir ./logs/ImageNet_affine_killed/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/ImageNet_affine_killed/checkpoint_best.pkl --freeze_backbone
 
 
 
