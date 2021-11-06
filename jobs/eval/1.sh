@@ -46,13 +46,15 @@ cd $SLURM_TMPDIR
 
 cd BMS
 python finetune.py --save_dir ./logs/eval/baseline_teacher --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/baseline_teacher/checkpoint_best.pkl --freeze_backbone
+python finetune.py --save_dir ./logs/eval/baseline --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/baseline/checkpoint_best.pkl --freeze_backbone
+
 python finetune.py --save_dir ./logs/eval/baseline_na_teacher --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/baseline_na_teacher/checkpoint_best.pkl --freeze_backbone
+python finetune.py --save_dir ./logs/eval/baseline_na --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/baseline_na/checkpoint_best.pkl --freeze_backbone
 
 # python finetune.py --save_dir ./logs/eval/baseline --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/baseline/EuroSAT/checkpoint_best.pkl --freeze_backbone &
 # python finetune.py --save_dir ./logs/eval/BMS_Euro --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/vanilla/EuroSAT/checkpoint_best.pkl --freeze_backbone &
 # python finetune.py --save_dir ./logs/eval/AdaBN_Euro --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/AdaBN/EuroSAT/checkpoint_best.pkl --freeze_backbone &
 # python finetune.py --save_dir ./logs/eval/STARTUP_Euro --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/STARTUP/EuroSAT/checkpoint_best.pkl --freeze_backbone &
-
 wait
 
 echo "-----------------------------------<End of run the program>---------------------------------"
