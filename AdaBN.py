@@ -130,6 +130,13 @@ def main(args):
             args.image_size).get_composed_transform(aug=False)
         dataset = miniImageNet_few_shot.SimpleDataset(
             transform, split=args.target_subset_split)
+    elif args.target_dataset == 'ImageNet_test':
+        transform = ImageNet_few_shot.TransformLoader(
+            args.image_size).get_composed_transform(aug=True)
+        transform_test = ImageNet_few_shot.TransformLoader(
+            args.image_size).get_composed_transform(aug=False)
+        dataset = ImageNet_few_shot.SimpleDataset(
+            transform, split=args.target_subset_split)
     elif args.target_dataset == 'tiered_ImageNet_test':
         if args.image_size != 84:
             warnings.warn("Tiered ImageNet: The image size for is not 84x84")
