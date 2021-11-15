@@ -11,7 +11,7 @@
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=32
 #SBATCH --mem=127000M
-#SBATCH --time=0-08:00
+#SBATCH --time=0-02:00
 #SBATCH --account=rrg-ebrahimi
 
 nvidia-smi
@@ -45,17 +45,18 @@ cd $SLURM_TMPDIR
 
 cd BMS
 
-python AdaBN.py --dir ./logs/AdaBN_teacher/miniImageNet --base_dictionary logs/baseline_teacher/checkpoint_best.pkl --target_dataset ImageNet_test --target_subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --bsize 256 --epochs 10 --model resnet10
-python finetune.py --save_dir ./logs/AdaBN_teacher/miniImageNet --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/AdaBN_teacher/miniImageNet/checkpoint_best.pkl --freeze_backbone
+# python AdaBN.py --dir ./logs/AdaBN_teacher/miniImageNet --base_dictionary logs/baseline_teacher/checkpoint_best.pkl --target_dataset ImageNet_test --target_subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --bsize 256 --epochs 10 --model resnet10
+# python finetune.py --save_dir ./logs/AdaBN_teacher/miniImageNet --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/AdaBN_teacher/miniImageNet/checkpoint_best.pkl --freeze_backbone
+# cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_teacher/miniImageNet/ ~/scratch/BMS/logs/AdaBN_teacher/
 
-python AdaBN.py --dir ./logs/AdaBN_na_teacher/miniImageNet --base_dictionary logs/baseline_teacher/checkpoint_best.pkl --target_dataset ImageNet_test --target_subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --bsize 256 --epochs 10 --model resnet10
+python AdaBN.py --dir ./logs/AdaBN_na_teacher/miniImageNet --base_dictionary logs/baseline_na_teacher/checkpoint_best.pkl --target_dataset ImageNet_test --target_subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --bsize 256 --epochs 10 --model resnet10
 python finetune.py --save_dir ./logs/AdaBN_na_teacher/miniImageNet --target_dataset ImageNet_test --subset_split datasets/split_seed_1/ImageNet_val_labeled.csv --embedding_load_path ./logs/AdaBN_na_teacher/miniImageNet/checkpoint_best.pkl --freeze_backbone
-
+cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_na_teacher/miniImageNet/ ~/scratch/BMS/logs/AdaBN_na_teacher/
 
 echo "-----------------------------------<End of run the program>---------------------------------"
 date +"%T"
-echo "--------------------------------------<backup the result>-----------------------------------"
-date +"%T"
-cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_teacher/miniImageNet/ ~/scratch/BMS/logs/AdaBN_teacher/
-cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_na_teacher/miniImageNet/ ~/scratch/BMS/logs/AdaBN_na_teacher/
+# echo "--------------------------------------<backup the result>-----------------------------------"
+# date +"%T"
+# cd $SLURM_TMPDIR
+# cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_teacher/miniImageNet/ ~/scratch/BMS/logs/AdaBN_teacher/
+# cp -r $SLURM_TMPDIR/BMS/logs/AdaBN_na_teacher/miniImageNet/ ~/scratch/BMS/logs/AdaBN_na_teacher/
