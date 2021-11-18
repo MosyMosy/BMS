@@ -15,6 +15,7 @@
 
 nvidia-smi
 
+module load python/3.7
 source ~/ENV/bin/activate
 
 echo "------------------------------------< Data preparation>----------------------------------"
