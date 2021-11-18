@@ -1,6 +1,6 @@
 # from lab.tsne import generate_features
 # from lab.affines import plot
-# from lab.layers import plot
+from lab.layers import plot
 # from lab.learning_curve import plot
 # from lab.tsne import plot
 
@@ -24,14 +24,14 @@
 #         if is_in == False:
             # text_file.writelines(line[0]+','+ line[1] + '\n')
     
-import torch
-import torchvision.models as models
-import copy
+# import torch
+# import torchvision.models as models
+# import copy
 
-model = models.resnet18(pretrained=True)
+# model = models.resnet18(pretrained=True)
 
-sd = {
-    'model': copy.deepcopy(model.state_dict())
-}
+# sd = {
+#     'model': copy.deepcopy(model.state_dict())
+# }
 
-torch.save(sd, 'resnet18-f37072fd.pkl')
+# torch.save(sd, 'resnet18-f37072fd.pkl')

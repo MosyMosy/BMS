@@ -13,6 +13,7 @@ import torch.nn as nn
 from datasets import (Chest_few_shot, CropDisease_few_shot, EuroSAT_few_shot,
                       ISIC_few_shot, miniImageNet_few_shot)
 from lab.layers.resnet10 import ResNet10
+from lab.layers.resnet import resnet18
 from matplotlib import cm
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
@@ -52,6 +53,18 @@ def load_checkpoint2(model, load_path, device):
     '''
     sd = torch.load(load_path, map_location=torch.device(device))
     model.load_state_dict(sd['model'])
+    model.eval()
+    return model
+
+def load_checkpoint3(model, load_path, device):
+    '''
+    Load model and optimizer from load path 
+    Return the epoch to continue the checkpoint
+    '''
+    sd = torch.load(load_path, map_location=torch.device(device))
+    # model = nn.DataParallel(model)
+        
+    model.load_state_dict(sd['state_dict'])
     model.eval()
     return model
 
@@ -205,27 +218,28 @@ def compare_positions(models, data_x, color_range, layers=[[None]], channels=Non
             path_list, out="lab/layers/compare_positions_{0}_{1}.png".format(l,  'positions'), shape=(len(models), 3))
 
 def compare_models(models, data_x, color_range, layers=[[None]], channels=None, value_position='input'):
-    for l in layers:
-        path_list = []
-        for i, model in enumerate(models):
-            with torch.no_grad():
-                model(data_x)
-                out, labels, clm = get_BN_output(
-                    model, colors=color_range[math.floor(i/2)], layers=l, channels=channels, position=value_position)
+    # for l in layers:
+    path_list = []
+    for i, model in enumerate(models):
+        with torch.no_grad():
+            model(data_x)
+            out, labels, clm = get_BN_output(
+                model, colors=color_range[math.floor(i/2)], layers=layers, channels=channels, position=value_position)
 
-                args = {'overlap': 4, 'bw_method': 0.2,
-                        'colormap': clm, 'linewidth': 0.3, 'linecolor': 'w',
-                        'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
-                        'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
+            args = {'overlap': 4, 'bw_method': 0.2,
+                    'colormap': clm, 'linewidth': 0.3, 'linecolor': 'w',
+                    'background': 'w',  'alpha': 0.8, 'figsize': (10, 5), 'fill': True,
+                    'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
 
-                joypy.joyplot(list(reversed(out)), labels=list(
-                    reversed(labels)), **args)
-                # plt.show()
-                path_list.append(
-                    "./lab/layers/{0}.png".format(i))
-                plt.savefig(path_list[-1],)
-        to_grid(
-            path_list, out="lab/layers/compare_models_{0}{1}.png".format(l,  '_' + value_position), shape=(int(len(models)/2), 2))
+            joypy.joyplot(list(reversed(out)), labels=list(
+                reversed(labels)), **args)
+            # plt.show()
+            path_list.append(
+                "./lab/layers/{0}.png".format(i))
+            plt.savefig(path_list[-1],)
+            break
+        # to_grid(
+        #     path_list, out="lab/layers/compare_models_{0}{1}.png".format(l,  '_' + value_position), shape=(int(len(models)/2), 2))
 
 def compare_two_models(model, model_na, data_x, color_range, layers=None, channels=None, value_position='input'):
     df = pd.DataFrame()    
@@ -240,7 +254,7 @@ def compare_two_models(model, model_na, data_x, color_range, layers=None, channe
 
         args = {'overlap': 4, 'bw_method': 0.2,
                 'linewidth': 1, 'legend':True, 'color':["#00E7E7","#008181"],
-                'background': 'w',  'alpha': 0.5, 'figsize': (10, 15), 'fill': True, 'x_range':[-50,50],
+                'background': 'w',  'alpha': 0.5, 'figsize': (10, 15), 'fill': True, 'x_range':[-5,5],
                 'grid': False, 'kind': 'kde', 'hist': False, 'bins': int(len(base_x))}
     if layers is None: layers = range(len(out))
     out_list = []
@@ -268,15 +282,15 @@ models = []
 models_na = []
 
 model_names_na = ['Baseline_na', 'BMS_in_Eurosat_na']
-models_na.append(load_checkpoint2(
-    ResNet10(), 'logs/baseline_na/checkpoint_best.pkl', device))
+models_na.append(load_checkpoint3(
+    resnet18(), 'logs/ImageNet_na/checkpoint_best.pkl', device))
 models_na.append(load_checkpoint2(
     ResNet10(), 'logs/BMS_in_na/EuroSAT/checkpoint_best.pkl', device))
 
 model_names = ['Baseline', 'BMS_in_Eurosat',
                'AdaBN_EuroSAT', 'STARTUP_EuroSAT']
-models.append(load_checkpoint2(
-    ResNet10(), 'logs/baseline/EuroSAT/checkpoint_best.pkl', device))
+models.append(load_checkpoint3(
+    resnet18(), 'logs/ImageNet/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
     ResNet10(), 'logs/BMS_in/EuroSAT/checkpoint_best.pkl', device))
 models.append(load_checkpoint2(
@@ -285,7 +299,7 @@ models.append(load_checkpoint2(
     ResNet10(), 'logs/STARTUP/EuroSAT/checkpoint_best.pkl', device))
 
 
-b_size = 1
+b_size = 2
 transform = EuroSAT_few_shot.TransformLoader(
     224).get_composed_transform(aug=True)
 transform_test = EuroSAT_few_shot.TransformLoader(
@@ -315,7 +329,7 @@ color_range = [['#670022', '#FF6699'], ['#004668', '#66D2FF'],
                ['#9B2802', '#FF9966'], ['#346600', '#75E600']]
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-layers = [[i] for i in range(1)]# [None] is for full network
+layers = [[i] for i in range(12)]# [None] is for full network
 channels = None
 
 # compare_domains(models=models, base_x=base_x, EuroSAT_x=EuroSAT_x, color_range=color_range,
@@ -324,9 +338,9 @@ channels = None
 # compare_positions(models, data_x=base_x,
 #                   color_range=color_range, layers=layers, channels=channels)
 
-# compare_models([models[0], models_na[0]], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
+# compare_models([models[0]], data_x=base_x, color_range=color_range, layers=None, channels=channels,value_position='output')
 
-layers = range(2,5)
-compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='input')
-# compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='output')
-# compare_two_models(models[0], models_na[0], data_x=base_x, color_range=color_range, layers=layers, channels=channels,value_position='before_affine')
+# layers = range(2,5)
+compare_two_models(models[0], models_na[0], data_x=EuroSAT_x, color_range=color_range, layers=None, channels=channels,value_position='input')
+compare_two_models(models[0], models_na[0], data_x=EuroSAT_x, color_range=color_range, layers=None, channels=channels,value_position='output')
+compare_two_models(models[0], models_na[0], data_x=EuroSAT_x, color_range=color_range, layers=None, channels=channels,value_position='before_affine')
