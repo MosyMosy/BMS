@@ -1,0 +1,98 @@
+Mon Nov 15 05:44:34 2021       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 470.57.02    Driver Version: 470.57.02    CUDA Version: 11.4     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  Tesla V100-SXM2...  Off  | 00000000:1A:00.0 Off |                    0 |
+| N/A   38C    P0    40W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   1  Tesla V100-SXM2...  Off  | 00000000:1C:00.0 Off |                    0 |
+| N/A   35C    P0    39W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   2  Tesla V100-SXM2...  Off  | 00000000:1D:00.0 Off |                    0 |
+| N/A   35C    P0    39W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   3  Tesla V100-SXM2...  Off  | 00000000:1E:00.0 Off |                    0 |
+| N/A   37C    P0    40W / 300W |      0MiB / 16160MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+------------------------------------< Data preparation>----------------------------------
+Copying the source code
+05:44:34
+Copying the datasets
+05:57:27
+creating data directories
+05:59:05
+----------------------------------< End of data preparation>--------------------------------
+06:00:13
+--------------------------------------------------------------------------------------------
+---------------------------------------<Run the program>------------------------------------
+06:00:13
+Traceback (most recent call last):
+  File "AdaBN.py", line 295, in <module>
+    main(args)
+  File "AdaBN.py", line 143, in main
+    raise ValueError('Invalid dataset!')
+ValueError: Invalid dataset!
+ImageNet_test
+5-way 1-shot
+Using Split:  datasets/split_seed_1/ImageNet_val_labeled.csv
+46800
+Loading Model:  ./logs/AdaBN_teacher/miniImageNet/checkpoint_best.pkl
+Traceback (most recent call last):
+  File "finetune.py", line 312, in <module>
+    main(params)
+  File "finetune.py", line 250, in main
+    acc_all = finetune(novel_loader, params, n_shot=shot)
+  File "finetune.py", line 50, in finetune
+    sd = torch.load(params.embedding_load_path,
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/serialization.py", line 579, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/serialization.py", line 230, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/serialization.py", line 211, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: './logs/AdaBN_teacher/miniImageNet/checkpoint_best.pkl'
+Traceback (most recent call last):
+  File "AdaBN.py", line 295, in <module>
+    main(args)
+  File "AdaBN.py", line 143, in main
+    raise ValueError('Invalid dataset!')
+ValueError: Invalid dataset!
+ImageNet_test
+5-way 1-shot
+Using Split:  datasets/split_seed_1/ImageNet_val_labeled.csv
+46800
+Loading Model:  ./logs/AdaBN_na_teacher/miniImageNet/checkpoint_best.pkl
+Traceback (most recent call last):
+  File "finetune.py", line 312, in <module>
+    main(params)
+  File "finetune.py", line 250, in main
+    acc_all = finetune(novel_loader, params, n_shot=shot)
+  File "finetune.py", line 50, in finetune
+    sd = torch.load(params.embedding_load_path,
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/serialization.py", line 579, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/serialization.py", line 230, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/mosymosy/ENV/lib/python3.8/site-packages/torch/serialization.py", line 211, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: './logs/AdaBN_na_teacher/miniImageNet/checkpoint_best.pkl'
+-----------------------------------<End of run the program>---------------------------------
+06:00:57
+--------------------------------------<backup the result>-----------------------------------
+06:00:57
