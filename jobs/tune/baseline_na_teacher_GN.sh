@@ -64,15 +64,23 @@ cd $SLURM_TMPDIR
 
 cd BMS
 
-python finetune.py --save_dir ./logs/baseline_na_teacher_GN/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
-python finetune.py --save_dir ./logs/baseline_na_teacher_GN/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
-python finetune.py --save_dir ./logs/baseline_na_teacher_GN/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
+# python finetune.py --save_dir ./logs/baseline_na_teacher_GN/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
+# python finetune.py --save_dir ./logs/baseline_na_teacher_GN/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
+# python finetune.py --save_dir ./logs/baseline_na_teacher_GN/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
+# wait
+# python finetune.py --save_dir ./logs/baseline_na_teacher_GN/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN
+
+
+python finetune.py --save_dir ./logs/baseline_na_teacher_GN4/EuroSAT --target_dataset EuroSAT --subset_split datasets/split_seed_1/EuroSAT_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN4/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
+python finetune.py --save_dir ./logs/baseline_na_teacher_GN4/CropDisease --target_dataset CropDisease --subset_split datasets/split_seed_1/CropDisease_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN4/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
+python finetune.py --save_dir ./logs/baseline_na_teacher_GN4/ISIC --target_dataset ISIC --subset_split datasets/split_seed_1/ISIC_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN4/checkpoint_best.pkl --freeze_backbone --model resnet10_GN &
 wait
-python finetune.py --save_dir ./logs/baseline_na_teacher_GN/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN/checkpoint_best.pkl --freeze_backbone --model resnet10_GN
+python finetune.py --save_dir ./logs/baseline_na_teacher_GN4/ChestX --target_dataset ChestX --subset_split datasets/split_seed_1/ChestX_labeled_80.csv --embedding_load_path ./logs/baseline_na_teacher_GN4/checkpoint_best.pkl --freeze_backbone --model resnet10_GN
 
 echo "-----------------------------------<End of run the program>---------------------------------"
 date +"%T"
 echo "--------------------------------------<backup the result>-----------------------------------"
 date +"%T"
 cd $SLURM_TMPDIR
-cp -r $SLURM_TMPDIR/BMS/logs/baseline_na_teacher_GN ~/scratch/BMS/logs
+# cp -r $SLURM_TMPDIR/BMS/logs/baseline_na_teacher_GN ~/scratch/BMS/logs
+cp -r $SLURM_TMPDIR/BMS/logs/baseline_na_teacher_GN4 ~/scratch/BMS/logs
